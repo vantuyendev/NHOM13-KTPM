@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Nhom13.ProjectStorage.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ef4fb6f196be7b2768f6c5e582f9901b1ba59ece")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd2b5eb01e4060c79e048daffe33a8a58741e8d4")]
 [assembly: System.Reflection.AssemblyProductAttribute("Nhom13.ProjectStorage.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Nhom13.ProjectStorage.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

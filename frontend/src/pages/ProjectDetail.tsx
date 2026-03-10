@@ -96,8 +96,9 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!token || !projectId) return;
 
+    const hubUrl = import.meta.env.VITE_HUB_URL ?? '/hubs/tasks';
     const connection = new HubConnectionBuilder()
-      .withUrl('https://localhost:5001/hubs/tasks', {
+      .withUrl(hubUrl, {
         accessTokenFactory: () => token,
       })
       .withAutomaticReconnect()

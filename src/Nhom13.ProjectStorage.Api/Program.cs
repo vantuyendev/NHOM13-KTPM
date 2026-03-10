@@ -5,14 +5,25 @@ using Microsoft.IdentityModel.Tokens;
 using Nhom13.ProjectStorage.Api.API.Hubs;
 using Nhom13.ProjectStorage.Api.API.Middleware;
 using Nhom13.ProjectStorage.Api.Application.Services;
+using Nhom13.ProjectStorage.Api.Domain.Entities;
 using Nhom13.ProjectStorage.Api.Infrastructure.Data;
 using Nhom13.ProjectStorage.Api.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ---- Database ----
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (!string.IsNullOrWhiteSpace(connectionString) && connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 
 // ---- Repositories & UoW ----
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -71,10 +82,75 @@ var app = builder.Build();
 
 // ---- Middleware Pipeline ----
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<MustChangePasswordMiddleware>();
+
+// ---- DB init + seed for local development ----
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.EnsureCreatedAsync();
+
+    if (!await db.Roles.AnyAsync())
+    {
+        db.Roles.AddRange(
+            new Role { RoleId = 1, RoleName = "Manager" },
+            new Role { RoleId = 2, RoleName = "Member" }
+        );
+        await db.SaveChangesAsync();
+    }
+
+    Department department;
+    if (!await db.Departments.AnyAsync())
+    {
+        department = new Department
+        {
+            Name = "Engineering",
+            Description = "Default department for local development"
+        };
+        db.Departments.Add(department);
+        await db.SaveChangesAsync();
+    }
+    else
+    {
+        department = await db.Departments.OrderBy(d => d.DepartmentId).FirstAsync();
+    }
+
+    if (!await db.Users.AnyAsync(u => u.CompanyEmail == "manager@company.com"))
+    {
+        db.Users.Add(new User
+        {
+            SystemUserId = "MGR001",
+            CompanyEmail = "manager@company.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Manager@123"),
+            RoleId = 1,
+            DepartmentId = department.DepartmentId,
+            MustChangePassword = false,
+            IsActive = true
+        });
+    }
+
+    if (!await db.Users.AnyAsync(u => u.CompanyEmail == "member@company.com"))
+    {
+        db.Users.Add(new User
+        {
+            SystemUserId = "MEM001",
+            CompanyEmail = "member@company.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Member@123"),
+            RoleId = 2,
+            DepartmentId = department.DepartmentId,
+            MustChangePassword = false,
+            IsActive = true
+        });
+    }
+
+    await db.SaveChangesAsync();
+}
 
 app.MapControllers();
 
