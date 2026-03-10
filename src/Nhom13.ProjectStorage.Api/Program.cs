@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Nhom13.ProjectStorage.Api.API.Hubs;
@@ -36,7 +37,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 // ---- JWT Authentication ----
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"]!;
+var secretKey = jwtSettings["SecretKey"]
+    ?? builder.Configuration["JWT_SECRET"]
+    ?? throw new InvalidOperationException("JWT secret key is missing. Configure JwtSettings:SecretKey or JWT_SECRET.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -82,7 +85,15 @@ var app = builder.Build();
 
 // ---- Middleware Pipeline ----
 app.UseMiddleware<GlobalExceptionMiddleware>();
-if (!app.Environment.IsDevelopment())
+
+// Trust proxy headers on platforms like Render/NGINX so scheme/remote IP are resolved correctly.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+var enableHttpsRedirect = builder.Configuration.GetValue("EnableHttpsRedirection", false);
+if (enableHttpsRedirect)
 {
     app.UseHttpsRedirection();
 }
@@ -153,6 +164,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
+
+// Health and root endpoints for container probes / quick checks.
+app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Nhom13.ProjectStorage.Api" }));
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 // ---- SignalR Hub Endpoint ----
 app.MapHub<TaskHub>("/hubs/tasks");
