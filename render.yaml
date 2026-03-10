@@ -1,0 +1,37 @@
+services:
+  # Backend API
+  - type: web
+    name: nhom13-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:8080
+      - key: DefaultConnection
+        value: Data Source=nhom13_project_storage.db
+      - key: JWT_SECRET
+        sync: false  # Phải set thủ công trên Render dashboard
+      - key: JWT_ISSUER
+        value: nhom13-app
+      - key: JWT_AUDIENCE
+        value: nhom13-app
+
+  # Frontend
+  - type: web
+    name: nhom13-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false  # Phải set thủ công sau khi deploy backend
+      - key: VITE_HUB_URL
+        sync: false  # Phải set thủ công sau khi deploy backend

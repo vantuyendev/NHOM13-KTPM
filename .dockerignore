@@ -1,0 +1,17 @@
+.git
+.gitignore
+.github
+node_modules
+npm-debug.log
+dist
+coverage
+*.env.local
+*.env
+nhom13_project_storage.db
+bin
+obj
+.vs
+.vscode
+*.sln.iml
+.DS_Store
+.idea
