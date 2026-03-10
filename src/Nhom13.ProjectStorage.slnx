@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj" />
+  <Project Path="Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj" />
+</Solution>
