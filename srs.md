@@ -885,7 +885,8 @@ viên mới</td>
 
 ### Ràng buộc thiết kế
 
-Hệ thống có khả năng đọc được các ngôn ngữ phần mềm như Python, C++,…
+Hệ thống có khả năng đọc được các ngôn ngữ phần mềm như Python, C++, C#…
 
 Hệ thống không có ràng buộc về giao diện nhưng cần ưu tiên đơn giản và
 tính tương tự các trang quản lý dự án phổ biến như Gitlab.
+
