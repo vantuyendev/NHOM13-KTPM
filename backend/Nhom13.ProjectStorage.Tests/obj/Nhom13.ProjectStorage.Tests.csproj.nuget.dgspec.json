@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj": {}
+    "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj": {}
   },
   "projects": {
-    "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj": {
+    "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj",
+        "projectUniqueName": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj",
         "projectName": "Nhom13.ProjectStorage.Api",
-        "projectPath": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj",
+        "projectPath": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj",
         "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Api/obj/",
+        "outputPath": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/codespace/.nuget/NuGet/NuGet.Config"
@@ -508,14 +508,14 @@
         }
       }
     },
-    "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj": {
+    "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj",
+        "projectUniqueName": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj",
         "projectName": "Nhom13.ProjectStorage.Tests",
-        "projectPath": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj",
+        "projectPath": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Tests/Nhom13.ProjectStorage.Tests.csproj",
         "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Tests/obj/",
+        "outputPath": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Tests/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/codespace/.nuget/NuGet/NuGet.Config"
@@ -530,8 +530,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj": {
-                "projectPath": "/workspaces/NHOM13-KTPM/src/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj"
+              "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj": {
+                "projectPath": "/workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api/Nhom13.ProjectStorage.Api.csproj"
               }
             }
           }

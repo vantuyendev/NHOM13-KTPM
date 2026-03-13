@@ -5,7 +5,7 @@
 set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKEND_DIR="$ROOT_DIR/src/Nhom13.ProjectStorage.Api"
+BACKEND_DIR="$ROOT_DIR/backend/Nhom13.ProjectStorage.Api"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 # ── Màu sắc terminal ─────────────────────────────────────────

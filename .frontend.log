@@ -2,13 +2,8 @@
 > frontend@0.0.0 dev
 > vite
 
-Port 3000 is in use, trying another one...
 
-  VITE v7.3.1  ready in 808 ms
+  VITE v7.3.1  ready in 3496 ms
 
-  ➜  Local:   http://localhost:3001/
+  ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
-10:46:55 AM [vite] (client) hmr update /src/index.css, /src/pages/Company.tsx, /src/pages/Profile.tsx, /src/pages/Login.tsx, /src/pages/ProjectDetail.tsx, /src/pages/Dashboard.tsx, /src/components/GlobalSearch.tsx
-10:47:01 AM [vite] (client) hmr update /src/pages/Login.tsx, /src/index.css
-10:49:25 AM [vite] (client) hmr update /src/index.css, /src/pages/Company.tsx, /src/pages/Profile.tsx, /src/pages/Login.tsx, /src/pages/ProjectDetail.tsx, /src/pages/Dashboard.tsx, /src/components/GlobalSearch.tsx
-10:49:25 AM [vite] (client) hmr update /src/pages/Login.tsx, /src/index.css

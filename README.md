@@ -141,7 +141,7 @@ Sau vài giây, mở trình duyệt tại **http://localhost:3000**.
 
 **Terminal 1 — Backend:**
 ```bash
-cd src/Nhom13.ProjectStorage.Api
+cd backend/Nhom13.ProjectStorage.Api
 dotnet run --launch-profile http
 ```
 
@@ -158,13 +158,13 @@ npm run dev
 
 ### Backend (xUnit)
 ```bash
-cd src/Nhom13.ProjectStorage.Tests
+cd backend/Nhom13.ProjectStorage.Tests
 dotnet test
 ```
 
 Các test nghiệp vụ quan trọng:
-- [src/Nhom13.ProjectStorage.Tests/Services/DocumentServiceTests.cs](src/Nhom13.ProjectStorage.Tests/Services/DocumentServiceTests.cs) — kiểm tra rule file > 20 MB phải dùng Cloud URL.
-- [src/Nhom13.ProjectStorage.Tests/Services/TaskServiceTests.cs](src/Nhom13.ProjectStorage.Tests/Services/TaskServiceTests.cs) — kiểm tra user ngoài project không được sửa task.
+- [backend/Nhom13.ProjectStorage.Tests/Services/DocumentServiceTests.cs](backend/Nhom13.ProjectStorage.Tests/Services/DocumentServiceTests.cs) — kiểm tra rule file > 20 MB phải dùng Cloud URL.
+- [backend/Nhom13.ProjectStorage.Tests/Services/TaskServiceTests.cs](backend/Nhom13.ProjectStorage.Tests/Services/TaskServiceTests.cs) — kiểm tra user ngoài project không được sửa task.
 
 ### Frontend (Vitest)
 ```bash
@@ -195,7 +195,7 @@ Tạo tài khoản demo qua API `/api/users` sau khi hệ thống khởi động
 ```text
 NHOM13-KTPM/
 ├── start.sh                              # ← Script chạy 1 lệnh duy nhất
-├── src/
+├── backend/
 │   ├── Nhom13.ProjectStorage.Api/        # Backend .NET 10 Web API
 │   │   ├── API/Controllers/              # REST Controllers
 │   │   ├── API/Hubs/                     # SignalR Hub
@@ -204,13 +204,14 @@ NHOM13-KTPM/
 │   │   ├── Domain/Entities/              # Domain models
 │   │   └── Infrastructure/               # EF Core, Repositories
 │   ├── Nhom13.ProjectStorage.Tests/      # Backend tests xUnit
-│   └── Nhom13.ProjectStorage.slnx        # Solution file
+│   ├── Nhom13.ProjectStorage.slnx        # Solution file (.slnx)
+│   ├── NHOM13-KTPM.sln                   # Solution file (.sln)
+│   └── Dockerfile                        # Docker build backend
 ├── frontend/                             # React + Vite + Tailwind CSS
 │   ├── src/components/                   # UI components
 │   ├── src/pages/                        # Trang Dashboard, Project, ...
 │   ├── src/services/api.ts               # Axios API client
 │   └── src/types/                        # TypeScript types
-├── Dockerfile                            # Docker build backend
 ├── render.yaml                           # Cấu hình deploy Render.com
 └── README.md
 ```

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Nhom13.ProjectStorage.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bced3d8239ffbacdbe120e0952cd4ff375e356d3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+36fb5f187d0f23444aa064de5189130997bfb591")]
 [assembly: System.Reflection.AssemblyProductAttribute("Nhom13.ProjectStorage.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Nhom13.ProjectStorage.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

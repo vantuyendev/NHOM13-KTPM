@@ -3,7 +3,7 @@ services:
   - type: web
     name: nhom13-backend
     runtime: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./backend/Dockerfile
     region: singapore
     plan: free
     healthCheckPath: /
