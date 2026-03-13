@@ -6,16 +6,22 @@
 
 ## Mục Lục
 
-- [🚀 Chạy Nhanh (1 Lệnh Duy Nhất)](#-chạy-nhanh-1-lệnh-duy-nhất)
-- [1. Tổng Quan Dự Án](#1-tổng-quan-dự-án)
-- [2. Công Nghệ Sử Dụng](#2-công-nghệ-sử-dụng)
-- [3. Tính Năng Chính](#3-tính-năng-chính)
-- [4. Điều Kiện Tiên Quyết](#4-điều-kiện-tiên-quyết)
-- [5. Cách Chạy Hệ Thống](#5-cách-chạy-hệ-thống)
-- [6. Chạy Kiểm Thử Tự Động](#6-chạy-kiểm-thử-tự-động)
-- [7. Tài Khoản Demo](#7-tài-khoản-demo)
-- [8. Cấu Trúc Thư Mục](#8-cấu-trúc-thư-mục)
-- [9. Ghi Chú Bàn Giao](#9-ghi-chú-bàn-giao)
+- [Hệ Thống Lưu Trữ Dự Án (Nhóm 13 - KTPM)](#hệ-thống-lưu-trữ-dự-án-nhóm-13---ktpm)
+	- [Mục Lục](#mục-lục)
+	- [🚀 Chạy Nhanh (1 Lệnh Duy Nhất)](#-chạy-nhanh-1-lệnh-duy-nhất)
+	- [1. Tổng Quan Dự Án](#1-tổng-quan-dự-án)
+	- [2. Công Nghệ Sử Dụng](#2-công-nghệ-sử-dụng)
+	- [3. Tính Năng Chính](#3-tính-năng-chính)
+	- [4. Điều Kiện Tiên Quyết](#4-điều-kiện-tiên-quyết)
+	- [5. Cách Chạy Hệ Thống](#5-cách-chạy-hệ-thống)
+		- [✅ Cách khuyến nghị — 1 lệnh duy nhất](#-cách-khuyến-nghị--1-lệnh-duy-nhất)
+		- [Cách thủ công — 2 terminal riêng](#cách-thủ-công--2-terminal-riêng)
+	- [6. Chạy Kiểm Thử Tự Động](#6-chạy-kiểm-thử-tự-động)
+		- [Backend (xUnit)](#backend-xunit)
+		- [Frontend (Vitest)](#frontend-vitest)
+	- [7. Tài Khoản Demo](#7-tài-khoản-demo)
+	- [8. Cấu Trúc Thư Mục](#8-cấu-trúc-thư-mục)
+	- [9. Ghi Chú Bàn Giao](#9-ghi-chú-bàn-giao)
 
 ---
 
@@ -215,6 +221,10 @@ NHOM13-KTPM/
 
 - **Database:** SQLite (`nhom13_project_storage.db`) được tạo tự động tại thư mục backend. Để reset dữ liệu, xoá file `.db` rồi chạy lại.
 - **Frontend proxy:** Vite proxy `/api` và `/hubs` sang `http://localhost:5175`. Nếu đổi port backend, cập nhật `vite.config.ts`.
+- **Deploy Render (tránh lỗi đăng nhập):**
+  - Ở service backend, set biến môi trường `CORS_ALLOWED_ORIGINS=https://<ten-frontend>.onrender.com`.
+  - Ở service frontend, set `VITE_API_BASE_URL=https://<ten-backend>.onrender.com` (không cần thêm `/api`).
+  - Nếu dùng SignalR, set thêm `VITE_HUB_URL=https://<ten-backend>.onrender.com/hubs/tasks`.
 - **Môi trường production:**
   - Thay `JwtSettings.SecretKey` bằng chuỗi mạnh, quản lý qua biến môi trường.
   - Cấu hình CORS, HTTPS và SMTP thật trong `appsettings.json`.

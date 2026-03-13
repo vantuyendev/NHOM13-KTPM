@@ -20,6 +20,8 @@ services:
         value: nhom13-app
       - key: JWT_AUDIENCE
         value: nhom13-app
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false  # Ví dụ: https://nhom13-frontend.onrender.com
 
   # Frontend
   - type: web
@@ -32,6 +34,6 @@ services:
     startCommand: npm run preview
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false  # Phải set thủ công sau khi deploy backend
+        sync: false  # Ví dụ: https://nhom13-backend.onrender.com (không cần thêm /api)
       - key: VITE_HUB_URL
         sync: false  # Phải set thủ công sau khi deploy backend

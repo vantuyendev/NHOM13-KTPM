@@ -75,6 +75,27 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// ---- CORS ----
+var corsAllowedOrigins = builder.Configuration["CORS_ALLOWED_ORIGINS"];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AppCors", policy =>
+    {
+        if (string.IsNullOrWhiteSpace(corsAllowedOrigins))
+        {
+            // Safe for this project because auth is JWT bearer (no cookie credentials).
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+        else
+        {
+            var origins = corsAllowedOrigins
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+        }
+    });
+});
+
 // ---- SignalR ----
 builder.Services.AddSignalR();
 
@@ -97,6 +118,7 @@ if (enableHttpsRedirect)
 {
     app.UseHttpsRedirection();
 }
+app.UseCors("AppCors");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<MustChangePasswordMiddleware>();

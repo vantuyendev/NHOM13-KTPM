@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, X } from 'lucide-react';
+import axios from 'axios';
 import { login as loginApi, changeFirstPassword } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getMyProfile } from '../services/api';
@@ -42,8 +43,18 @@ export default function Login() {
         login(token, profileRes.data);
         navigate('/dashboard');
       }
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (!err.response) {
+          setError('Cannot connect to server. Check VITE_API_BASE_URL and backend CORS settings.');
+        } else if (err.response.status === 401) {
+          setError('Invalid email or password.');
+        } else {
+          setError('Login failed. Please try again.');
+        }
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
