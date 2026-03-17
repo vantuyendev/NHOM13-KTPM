@@ -32,3 +32,20 @@ Frontend:
 cd frontend
 npm test
 ```
+
+Demo account:
+
+`Manager`
+```bash
+manager@company.com
+```
+```bash
+Manager@123
+```
+`Member`
+```bash
+member@company.com
+```
+```bash
+Member@123
+```
