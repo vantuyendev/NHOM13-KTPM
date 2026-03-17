@@ -11,10 +11,10 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (245ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (40ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT COUNT(*) FROM "sqlite_master" WHERE "type" = 'table' AND "rootpage" IS NOT NULL;
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT EXISTS (
           SELECT 1
           FROM "Roles" AS "r")
@@ -51,24 +51,10 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       FROM "Projects" AS "p"
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
-      FROM "Departments" AS "d"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
-      FROM "Users" AS "u"
-      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."DeletedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
-      FROM "Departments" AS "d"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
-      FROM "Users" AS "u"
-      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."DeletedAt" IS NULL
+      SELECT "t"."TaskId", "t"."ProjectId", "p"."Name", "t"."Title", "t"."Status", "t"."StartDate", "t"."DueDate"
+      FROM "Tasks" AS "t"
+      INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
+      ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (3ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
@@ -83,12 +69,6 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
       ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."TaskId", "t"."ProjectId", "p"."Name", "t"."Title", "t"."Status", "t"."StartDate", "t"."DueDate"
-      FROM "Tasks" AS "t"
-      INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
-      ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
       FROM "Users" AS "u"
@@ -97,43 +77,40 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
+      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
+      FROM "Departments" AS "d"
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
       FROM "Users" AS "u"
       INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."UserId" = @CurrentUserId
-      LIMIT 1
+      WHERE "u"."DeletedAt" IS NULL
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."TaskId", "t"."ProjectId", "p"."Name", "t"."Title", "t"."Status", "t"."StartDate", "t"."DueDate"
-      FROM "Tasks" AS "t"
-      INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
-      ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."TaskId", "t"."ProjectId", "p"."Name", "t"."Title", "t"."Status", "t"."StartDate", "t"."DueDate"
-      FROM "Tasks" AS "t"
-      INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
-      ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
       FROM "Users" AS "u"
       INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."UserId" = @CurrentUserId
+      WHERE "u"."DeletedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
+      FROM "Departments" AS "d"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+      WHERE "p"."ProjectId" = @p
       LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      DELETE FROM "Projects"
+      WHERE "ProjectId" = @p0
+      RETURNING 1;

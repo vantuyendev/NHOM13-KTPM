@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Shield, Building2, CheckCircle, XCircle, KeyRound, Save, ListChecks } from 'lucide-react';
 import { getMyProfile, getMyTasks, updateMyProfile } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -25,10 +25,32 @@ export default function Profile() {
   useEffect(() => {
     Promise.all([
       getMyProfile().then((r) => {
-        setUser(r.data);
-        setEditForm({ systemUserId: r.data.systemUserId, companyEmail: r.data.companyEmail });
+        const raw = (r.data ?? {}) as any;
+        const normalizedProfile = {
+          userId: raw.userId ?? raw.UserId ?? 0,
+          systemUserId: String(raw.systemUserId ?? raw.SystemUserId ?? ''),
+          companyEmail: String(raw.companyEmail ?? raw.CompanyEmail ?? ''),
+          roleId: raw.roleId ?? raw.RoleId ?? 2,
+          roleName: raw.roleName ?? raw.RoleName ?? 'Member',
+          departmentId: raw.departmentId ?? raw.DepartmentId ?? 0,
+          isActive: raw.isActive ?? raw.IsActive ?? false,
+          mustChangePassword: raw.mustChangePassword ?? raw.MustChangePassword ?? false,
+        } as User;
+
+        setUser(normalizedProfile);
+        setEditForm({
+          systemUserId: normalizedProfile.systemUserId,
+          companyEmail: normalizedProfile.companyEmail,
+        });
       }),
-      getMyTasks().then((r) => setMyTasks(r.data)),
+      getMyTasks().then((r) => {
+        const rawTasks = r.data;
+        if (!Array.isArray(rawTasks)) {
+          setMyTasks([]);
+          return;
+        }
+        setMyTasks(rawTasks as PersonalTask[]);
+      }),
     ])
       .catch(() => setError('Không thể tải hồ sơ cá nhân.'))
       .finally(() => setLoading(false));
@@ -61,10 +83,17 @@ export default function Profile() {
 
   if (!user) return <div className="text-red-500 p-4">{error || 'Không thể tải hồ sơ cá nhân.'}</div>;
 
-  const statusClass = useMemo(
-    () => user.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400',
-    [user.isActive]
-  );
+  const normalizedUser = {
+    userId: user.userId ?? (user as any).UserId ?? 0,
+    systemUserId: user.systemUserId ?? (user as any).SystemUserId ?? 'N/A',
+    companyEmail: user.companyEmail ?? (user as any).CompanyEmail ?? 'N/A',
+    roleId: user.roleId ?? (user as any).RoleId ?? 2,
+    departmentId: user.departmentId ?? (user as any).DepartmentId ?? 0,
+    isActive: user.isActive ?? (user as any).IsActive ?? false,
+    mustChangePassword: user.mustChangePassword ?? (user as any).MustChangePassword ?? false,
+  };
+
+  const statusClass = normalizedUser.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400';
 
   const fields = [
     {
@@ -72,21 +101,21 @@ export default function Profile() {
       label: 'Vai trò',
       value: (
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${user.roleId === 1 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
-          {user.roleId === 1 ? 'Quản lý' : 'Thành viên'}
+          {normalizedUser.roleId === 1 ? 'Quản lý' : 'Thành viên'}
         </span>
       ),
     },
     {
       icon: <Building2 size={16} />,
       label: 'Phòng ban',
-      value: user.departmentId ? `Phòng ban #${user.departmentId}` : '— Chưa được phân công —',
+      value: normalizedUser.departmentId ? `Phòng ban #${normalizedUser.departmentId}` : '— Chưa được phân công —',
     },
     {
-      icon: user.isActive ? <CheckCircle size={16} className="text-green-500" /> : <XCircle size={16} className="text-gray-400" />,
+      icon: normalizedUser.isActive ? <CheckCircle size={16} className="text-green-500" /> : <XCircle size={16} className="text-gray-400" />,
       label: 'Trạng thái tài khoản',
       value: (
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusClass}`}>
-          {user.isActive ? 'Hoạt động' : 'Ngưng hoạt động'}
+          {normalizedUser.isActive ? 'Hoạt động' : 'Ngưng hoạt động'}
         </span>
       ),
     },
@@ -94,14 +123,14 @@ export default function Profile() {
       icon: <KeyRound size={16} />,
       label: 'Bắt buộc đổi mật khẩu',
       value: (
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${user.mustChangePassword ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-          {user.mustChangePassword ? 'Có' : 'Không'}
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${normalizedUser.mustChangePassword ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+          {normalizedUser.mustChangePassword ? 'Có' : 'Không'}
         </span>
       ),
     },
   ];
 
-  const initials = user.companyEmail.slice(0, 2).toUpperCase();
+  const initials = String(normalizedUser.companyEmail || 'U').slice(0, 2).toUpperCase();
 
   return (
     <div className="max-w-3xl">
@@ -113,8 +142,8 @@ export default function Profile() {
           {initials}
         </div>
         <div>
-          <p className="font-semibold text-gray-900 text-lg">{user.companyEmail}</p>
-          <p className="text-sm text-gray-500">{user.systemUserId}</p>
+          <p className="font-semibold text-gray-900 text-lg">{normalizedUser.companyEmail}</p>
+          <p className="text-sm text-gray-500">{normalizedUser.systemUserId}</p>
         </div>
       </div>
 
