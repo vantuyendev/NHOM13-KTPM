@@ -123,9 +123,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<MustChangePasswordMiddleware>();
 
+app.MapControllers();
+
+// Health and root endpoints for container probes / quick checks.
+app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Nhom13.ProjectStorage.Api" }));
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
+// ---- SignalR Hub Endpoint ----
+app.MapHub<TaskHub>("/hubs/tasks");
+
+await app.StartAsync();
+
 // ---- DB init + seed for local development ----
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.EnsureCreatedAsync();
 
@@ -184,15 +196,10 @@ using (var scope = app.Services.CreateScope())
 
     await db.SaveChangesAsync();
 }
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Database initialization failed during startup.");
+}
 
-app.MapControllers();
-
-// Health and root endpoints for container probes / quick checks.
-app.MapGet("/", () => Results.Ok(new { status = "ok", service = "Nhom13.ProjectStorage.Api" }));
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
-
-// ---- SignalR Hub Endpoint ----
-app.MapHub<TaskHub>("/hubs/tasks");
-
-app.Run();
+await app.WaitForShutdownAsync();
 
