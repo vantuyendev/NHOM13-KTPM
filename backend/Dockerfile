@@ -4,10 +4,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 
 # Copy solution file
-COPY ["backend/NHOM13-KTPM.sln", "./"]
+COPY ["NHOM13-KTPM.sln", "./"]
 
 # Copy project files
-COPY ["backend/Nhom13.ProjectStorage.Api/", "Nhom13.ProjectStorage.Api/"]
+COPY ["Nhom13.ProjectStorage.Api/", "Nhom13.ProjectStorage.Api/"]
 
 # Restore and build
 RUN dotnet restore
