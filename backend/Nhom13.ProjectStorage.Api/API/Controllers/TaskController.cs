@@ -45,6 +45,35 @@ public class TaskController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("~/api/task/my")]
+    public async Task<IActionResult> GetMyTasks()
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        var query = _context.Tasks
+            .Include(t => t.Project)
+            .AsQueryable();
+
+        if (role != "Manager")
+        {
+            query = query.Where(t => t.Project.ProjectMembers.Any(pm => pm.UserId == CurrentUserId));
+        }
+
+        var tasks = await query
+            .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
+            .Select(t => new PersonalTaskDto(
+                t.TaskId,
+                t.ProjectId,
+                t.Project.Name,
+                t.Title,
+                t.Status,
+                t.StartDate,
+                t.DueDate
+            ))
+            .ToListAsync();
+
+        return Ok(tasks);
+    }
+
     [HttpGet("{taskId}")]
     public async Task<IActionResult> GetTask(int projectId, int taskId)
     {

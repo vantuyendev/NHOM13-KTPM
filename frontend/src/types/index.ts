@@ -28,6 +28,16 @@ export interface Task {
   dueDate: string | null;
 }
 
+export interface PersonalTask {
+  taskId: number;
+  projectId: number;
+  projectName: string;
+  title: string;
+  status: string;
+  startDate: string | null;
+  dueDate: string | null;
+}
+
 export interface Document {
   documentId: number;
   projectId: number;

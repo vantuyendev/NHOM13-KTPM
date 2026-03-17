@@ -10,7 +10,14 @@ interface Props {
   onSave: (taskId: number, payload: { title: string; status: string; dueDate: string | null; assigneeIds: number[] }) => Promise<void>;
 }
 
-const STATUS_OPTIONS = ['To Do', 'In Progress', 'Done'];
+const STATUS_OPTIONS = ['To Do', 'In Progress', 'Done', 'Blocked'];
+
+const STATUS_LABELS: Record<string, string> = {
+  'To Do': 'Cần làm',
+  'In Progress': 'Đang tiến hành',
+  Done: 'Hoàn thành',
+  Blocked: 'Đang vướng mắc',
+};
 
 export default function TaskEditModal({ isOpen, task, canEdit, onClose, onSave }: Props) {
   const [title, setTitle] = useState('');
@@ -52,7 +59,7 @@ export default function TaskEditModal({ isOpen, task, canEdit, onClose, onSave }
       });
       onClose();
     } catch {
-      setError('Failed to save task.');
+      setError('Không thể lưu tác vụ.');
     } finally {
       setSaving(false);
     }
@@ -62,13 +69,13 @@ export default function TaskEditModal({ isOpen, task, canEdit, onClose, onSave }
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Edit Task</h3>
+          <h3 className="font-semibold text-gray-900">Chỉnh sửa tác vụ</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
         </div>
 
         {!canEdit && (
           <div className="mb-3 bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2 rounded-lg">
-            You do not have permission to edit this task. Only project members can modify task details.
+            Bạn không có quyền chỉnh sửa tác vụ này. Chỉ thành viên dự án mới được phép cập nhật.
           </div>
         )}
 
@@ -76,7 +83,7 @@ export default function TaskEditModal({ isOpen, task, canEdit, onClose, onSave }
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -88,18 +95,18 @@ export default function TaskEditModal({ isOpen, task, canEdit, onClose, onSave }
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 disabled={!canEdit}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
               >
-                {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] ?? s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hạn chót</label>
               <input
                 type="date"
                 value={dueDate}
@@ -111,21 +118,21 @@ export default function TaskEditModal({ isOpen, task, canEdit, onClose, onSave }
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Assignees</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Người phụ trách</label>
             <input
               value={assigneesText}
               onChange={(e) => setAssigneesText(e.target.value)}
               disabled={!canEdit}
-              placeholder="Enter user IDs separated by commas (e.g. 3,5,8)"
+              placeholder="Nhập ID người dùng, phân tách bằng dấu phẩy (ví dụ: 3,5,8)"
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
             />
-            <p className="text-xs text-gray-400 mt-1">Backend currently does not persist assignees in this phase; UI is prepared for integration.</p>
+            <p className="text-xs text-gray-400 mt-1">Backend hiện chưa lưu danh sách người phụ trách ở giai đoạn này; giao diện đã sẵn sàng để tích hợp.</p>
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
             <button type="submit" disabled={!canEdit || saving} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
             </button>
           </div>
         </form>

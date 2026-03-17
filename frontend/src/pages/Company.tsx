@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Building2, Users, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import {
   getDepartments, createDepartment, updateDepartment, deleteDepartment,
-  getUsers, createUser, deleteUser,
+  getUsers, createUser, deleteUser, updateUser,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { Department, User } from '../types';
@@ -25,13 +25,16 @@ export default function Company() {
   const [showUserForm, setShowUserForm] = useState(false);
   const [userForm, setUserForm] = useState({ systemUserId: '', companyEmail: '', password: '', departmentId: '' });
   const [savingUser, setSavingUser] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editUserForm, setEditUserForm] = useState({ companyEmail: '', roleId: '2', departmentId: '', isActive: true });
+  const [savingEditUser, setSavingEditUser] = useState(false);
 
   useEffect(() => {
     Promise.all([
       getDepartments().then((r) => setDepartments(r.data)),
       getUsers().then((r) => setUsers(r.data)),
     ])
-      .catch(() => setError('Failed to load company data.'))
+      .catch(() => setError('Không thể tải dữ liệu công ty.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -60,20 +63,20 @@ export default function Company() {
       setDepartments(res.data);
       setShowDeptForm(false);
     } catch {
-      setError('Failed to save department.');
+      setError('Không thể lưu phòng ban.');
     } finally {
       setSavingDept(false);
     }
   };
 
   const handleDeleteDept = async (id: number) => {
-    if (!confirm('Delete this department? Only possible if no employees are assigned.')) return;
+    if (!confirm('Bạn có chắc muốn xóa phòng ban này? Chỉ xóa được khi chưa có nhân viên được gán.')) return;
     try {
       await deleteDepartment(id);
       setDepartments((prev) => prev.filter((d) => d.departmentId !== id));
       if (filterDeptId === id) setFilterDeptId(null);
     } catch {
-      setError('Cannot delete department — it may still have employees.');
+      setError('Không thể xóa phòng ban do vẫn còn nhân viên.');
     }
   };
 
@@ -93,20 +96,51 @@ export default function Company() {
       setShowUserForm(false);
       setUserForm({ systemUserId: '', companyEmail: '', password: '', departmentId: '' });
     } catch {
-      setError('Failed to create employee.');
+      setError('Không thể thêm nhân viên.');
     } finally {
       setSavingUser(false);
     }
   };
 
   const handleDeleteUser = async (userId: number) => {
-    if (!confirm('Deactivate this employee?')) return;
+    if (!confirm('Bạn có chắc muốn vô hiệu hóa nhân viên này?')) return;
     try {
       await deleteUser(userId);
       const res = await getUsers();
       setUsers(res.data);
     } catch {
-      setError('Failed to delete employee.');
+      setError('Không thể xóa nhân viên.');
+    }
+  };
+
+  const openEditUser = (user: User) => {
+    setEditingUser(user);
+    setEditUserForm({
+      companyEmail: user.companyEmail,
+      roleId: String(user.roleId),
+      departmentId: user.departmentId ? String(user.departmentId) : '',
+      isActive: user.isActive,
+    });
+  };
+
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setSavingEditUser(true);
+    try {
+      await updateUser(editingUser.userId, {
+        companyEmail: editUserForm.companyEmail.trim(),
+        roleId: Number(editUserForm.roleId),
+        departmentId: Number(editUserForm.departmentId),
+        isActive: editUserForm.isActive,
+      });
+      const res = await getUsers();
+      setUsers(res.data);
+      setEditingUser(null);
+    } catch {
+      setError('Không thể cập nhật nhân viên.');
+    } finally {
+      setSavingEditUser(false);
     }
   };
 
@@ -122,7 +156,7 @@ export default function Company() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Company</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-6">Công ty</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
@@ -136,18 +170,18 @@ export default function Company() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Building2 size={18} className="text-gray-500" />
-            <h2 className="font-semibold text-gray-800">Departments</h2>
+            <h2 className="font-semibold text-gray-800">Phòng ban</h2>
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{departments.length}</span>
           </div>
           {isManager && (
             <button onClick={openCreateDept} className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
-              <Plus size={15} /> Add Department
+              <Plus size={15} /> Thêm phòng ban
             </button>
           )}
         </div>
 
         {departments.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-8">No departments yet.</p>
+          <p className="text-gray-400 text-sm text-center py-8">Chưa có phòng ban.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {departments.map((dept) => {
@@ -166,7 +200,7 @@ export default function Company() {
                     <div>
                       <p className="font-semibold text-gray-800 text-sm">{dept.name}</p>
                       {dept.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{dept.description}</p>}
-                      <p className="text-xs text-gray-400 mt-1">{count} employee{count !== 1 ? 's' : ''}</p>
+                      <p className="text-xs text-gray-400 mt-1">{count} nhân viên</p>
                     </div>
                     {isManager && (
                       <div className="flex gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
@@ -187,7 +221,7 @@ export default function Company() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Users size={18} className="text-gray-500" />
-            <h2 className="font-semibold text-gray-800">Employees</h2>
+            <h2 className="font-semibold text-gray-800">Nhân viên</h2>
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{filteredUsers.length}</span>
             {filterDeptId && (
               <span className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -198,13 +232,13 @@ export default function Company() {
           </div>
           {isManager && (
             <button onClick={() => setShowUserForm(true)} className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
-              <Plus size={15} /> Add Employee
+              <Plus size={15} /> Thêm nhân viên
             </button>
           )}
         </div>
 
         {filteredUsers.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-8">No employees{filterDeptId ? ' in this department' : ''} yet.</p>
+          <p className="text-gray-400 text-sm text-center py-8">Chưa có nhân viên{filterDeptId ? ' trong phòng ban này' : ''}.</p>
         ) : (
           <div className="overflow-hidden rounded-xl border border-gray-200">
             <table className="w-full text-sm">
@@ -212,9 +246,9 @@ export default function Company() {
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">ID</th>
                   <th className="px-4 py-3 text-left font-medium">Email</th>
-                  <th className="px-4 py-3 text-left font-medium">Role</th>
-                  <th className="px-4 py-3 text-left font-medium">Department</th>
-                  <th className="px-4 py-3 text-left font-medium">Status</th>
+                  <th className="px-4 py-3 text-left font-medium">Vai trò</th>
+                  <th className="px-4 py-3 text-left font-medium">Phòng ban</th>
+                  <th className="px-4 py-3 text-left font-medium">Trạng thái</th>
                   {isManager && <th className="px-4 py-3" />}
                 </tr>
               </thead>
@@ -227,20 +261,25 @@ export default function Company() {
                       <td className="px-4 py-3 text-gray-800">{user.companyEmail}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${user.roleId === 1 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
-                          {user.roleId === 1 ? 'Manager' : 'Member'}
+                          {user.roleId === 1 ? 'Quản lý' : 'Thành viên'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-500">{deptName ?? '—'}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user.isActive ? 'Hoạt động' : 'Ngưng hoạt động'}
                         </span>
                       </td>
                       {isManager && (
                         <td className="px-4 py-3 text-right">
-                          <button onClick={() => handleDeleteUser(user.userId)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition">
-                            <Trash2 size={14} />
-                          </button>
+                          <div className="inline-flex items-center gap-1">
+                            <button onClick={() => openEditUser(user)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition">
+                              <Pencil size={14} />
+                            </button>
+                            <button onClick={() => handleDeleteUser(user.userId)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -257,22 +296,22 @@ export default function Company() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">{editingDept ? 'Edit Department' : 'Add Department'}</h3>
+              <h3 className="font-semibold text-gray-900">{editingDept ? 'Chỉnh sửa phòng ban' : 'Thêm phòng ban'}</h3>
               <button onClick={() => setShowDeptForm(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
             </div>
             <form onSubmit={handleSaveDept} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input value={deptForm.name} onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })} required placeholder="Department name" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tên phòng ban</label>
+                <input value={deptForm.name} onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })} required placeholder="Nhập tên phòng ban" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea value={deptForm.description} onChange={(e) => setDeptForm({ ...deptForm, description: e.target.value })} rows={3} placeholder="Optional description" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                <textarea value={deptForm.description} onChange={(e) => setDeptForm({ ...deptForm, description: e.target.value })} rows={3} placeholder="Mô tả (không bắt buộc)" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" />
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowDeptForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                <button type="button" onClick={() => setShowDeptForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
                 <button type="submit" disabled={savingDept} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
-                  {savingDept ? 'Saving…' : editingDept ? 'Update' : 'Create'}
+                  {savingDept ? 'Đang lưu…' : editingDept ? 'Cập nhật' : 'Tạo mới'}
                 </button>
               </div>
             </form>
@@ -285,33 +324,94 @@ export default function Company() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Add Employee</h3>
+              <h3 className="font-semibold text-gray-900">Thêm nhân viên</h3>
               <button onClick={() => setShowUserForm(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
             </div>
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">System User ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mã người dùng hệ thống</label>
                 <input value={userForm.systemUserId} onChange={(e) => setUserForm({ ...userForm, systemUserId: e.target.value })} required placeholder="e.g. EMP001" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
-                <input type="email" value={userForm.companyEmail} onChange={(e) => setUserForm({ ...userForm, companyEmail: e.target.value })} required placeholder="user@company.com" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email công ty</label>
+                <input type="email" value={userForm.companyEmail} onChange={(e) => setUserForm({ ...userForm, companyEmail: e.target.value })} required placeholder="nhanvien@congty.com" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Temporary Password</label>
-                <input type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required placeholder="Temporary password" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu tạm thời</label>
+                <input type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required placeholder="Nhập mật khẩu tạm thời" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phòng ban</label>
                 <select value={userForm.departmentId} onChange={(e) => setUserForm({ ...userForm, departmentId: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
-                  <option value="">— None —</option>
+                  <option value="">— Không có —</option>
                   {departments.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
                 </select>
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowUserForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                <button type="button" onClick={() => setShowUserForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
                 <button type="submit" disabled={savingUser} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
-                  {savingUser ? 'Creating…' : 'Create'}
+                  {savingUser ? 'Đang tạo…' : 'Tạo mới'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Chỉnh sửa nhân viên</h3>
+              <button onClick={() => setEditingUser(null)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleEditUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email công ty</label>
+                <input
+                  type="email"
+                  value={editUserForm.companyEmail}
+                  onChange={(e) => setEditUserForm({ ...editUserForm, companyEmail: e.target.value })}
+                  required
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                  <select
+                    value={editUserForm.roleId}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, roleId: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  >
+                    <option value="1">Quản lý</option>
+                    <option value="2">Thành viên</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phòng ban</label>
+                  <select
+                    value={editUserForm.departmentId}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, departmentId: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  >
+                    {departments.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={editUserForm.isActive}
+                  onChange={(e) => setEditUserForm({ ...editUserForm, isActive: e.target.checked })}
+                />
+                Tài khoản đang hoạt động
+              </label>
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setEditingUser(null)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
+                <button type="submit" disabled={savingEditUser} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
+                  {savingEditUser ? 'Đang lưu...' : 'Lưu'}
                 </button>
               </div>
             </form>

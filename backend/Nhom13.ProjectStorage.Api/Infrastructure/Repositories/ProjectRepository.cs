@@ -17,6 +17,7 @@ public class ProjectRepository : Repository<Project>, IProjectRepository
     public async System.Threading.Tasks.Task<Project?> GetProjectWithMembersAsync(int projectId) =>
         await _context.Projects
             .Include(p => p.ProjectMembers)
+                .ThenInclude(pm => pm.User)
             .Include(p => p.Manager)
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 }

@@ -64,7 +64,7 @@ export default function GlobalSearch() {
         <Search size={15} className="text-gray-400" />
         <input
           type="text"
-          placeholder="Search projects, users, documents..."
+          placeholder="Tìm kiếm..."
           value={query}
           onFocus={() => setOpen(true)}
           onChange={(e) => {
@@ -77,16 +77,16 @@ export default function GlobalSearch() {
 
       {open && query.trim() && (
         <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-40">
-          {loading && <p className="text-sm text-gray-500 px-4 py-3">Searching...</p>}
+          {loading && <p className="text-sm text-gray-500 px-4 py-3">Đang tìm kiếm...</p>}
 
           {!loading && (
             <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
               <section className="px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
-                  <FolderKanban size={12} /> Projects
+                  <FolderKanban size={12} /> Dự án
                 </p>
                 {results.projects.length === 0 ? (
-                  <p className="text-xs text-gray-400 px-2 py-1">No projects</p>
+                  <p className="text-xs text-gray-400 px-2 py-1">Không có dự án</p>
                 ) : (
                   results.projects.map((p) => (
                     <Link
@@ -104,10 +104,10 @@ export default function GlobalSearch() {
 
               <section className="px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
-                  <Users size={12} /> Users
+                  <Users size={12} /> Người dùng
                 </p>
                 {results.users.length === 0 ? (
-                  <p className="text-xs text-gray-400 px-2 py-1">No users</p>
+                  <p className="text-xs text-gray-400 px-2 py-1">Không có người dùng</p>
                 ) : (
                   results.users.map((u) => (
                     <Link
@@ -125,10 +125,10 @@ export default function GlobalSearch() {
 
               <section className="px-3 py-2">
                 <p className="text-[11px] uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
-                  <FileText size={12} /> Documents
+                  <FileText size={12} /> Tài liệu
                 </p>
                 {results.documents.length === 0 ? (
-                  <p className="text-xs text-gray-400 px-2 py-1">No documents</p>
+                  <p className="text-xs text-gray-400 px-2 py-1">Không có tài liệu</p>
                 ) : (
                   results.documents.map((d) => (
                     <Link
@@ -137,7 +137,7 @@ export default function GlobalSearch() {
                       onClick={() => setOpen(false)}
                       className="block px-2 py-2 rounded-lg hover:bg-gray-50"
                     >
-                      <p className="text-sm text-gray-800 truncate">{d.internalPath ?? d.cloudUrl ?? `Document #${d.documentId}`}</p>
+                      <p className="text-sm text-gray-800 truncate">{d.internalPath ?? d.cloudUrl ?? `Tài liệu #${d.documentId}`}</p>
                       <p className="text-xs text-gray-400">{(d.fileSizeBytes / (1024 * 1024)).toFixed(2)} MB</p>
                     </Link>
                   ))
@@ -148,8 +148,8 @@ export default function GlobalSearch() {
 
           {isEmpty && (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm font-medium text-gray-500">No results found</p>
-              <p className="text-xs text-gray-400 mt-1">Try a different keyword.</p>
+              <p className="text-sm font-medium text-gray-500">Không tìm thấy kết quả</p>
+              <p className="text-xs text-gray-400 mt-1">Hãy thử từ khóa khác.</p>
             </div>
           )}
         </div>

@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Pencil,
   Plus,
+  Trash2,
   Users,
   X,
 } from 'lucide-react';
@@ -15,11 +16,14 @@ import {
   addComment,
   addProjectMember,
   createTask,
+  deleteDocument,
   deleteTask,
   getComments,
   getDocuments,
   getProject,
   getTasks,
+  removeProjectMember,
+  updateProject,
   updateTask,
   uploadDocument,
 } from '../services/api';
@@ -35,6 +39,20 @@ const STATUS_BADGE: Record<string, string> = {
   'In Progress': 'bg-blue-100 text-blue-700',
   Done: 'bg-green-100 text-green-700',
   Blocked: 'bg-red-100 text-red-600',
+};
+
+const TASK_STATUS_LABELS: Record<string, string> = {
+  'To Do': 'Cần làm',
+  'In Progress': 'Đang tiến hành',
+  Done: 'Hoàn thành',
+  Blocked: 'Đang vướng mắc',
+};
+
+const PROJECT_STATUS_LABELS: Record<string, string> = {
+  Active: 'Đang hoạt động',
+  'On Hold': 'Tạm dừng',
+  Completed: 'Hoàn thành',
+  Cancelled: 'Đã hủy',
 };
 
 function toCommentModel(payload: any): Comment {
@@ -66,6 +84,9 @@ export default function ProjectDetail() {
   const [savingTask, setSavingTask] = useState(false);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showProjectEditModal, setShowProjectEditModal] = useState(false);
+  const [projectForm, setProjectForm] = useState({ name: '', departmentId: '', managerUserId: '', status: 'Active' });
+  const [savingProject, setSavingProject] = useState(false);
 
   const [newMemberId, setNewMemberId] = useState('');
 
@@ -85,9 +106,19 @@ export default function ProjectDetail() {
       getTasks(projectId).then((r) => setTasks(r.data)),
       getDocuments(projectId).then((r) => setDocuments(r.data)),
     ])
-      .catch(() => setError('Failed to load project data.'))
+      .catch(() => setError('Không thể tải dữ liệu dự án.'))
       .finally(() => setLoading(false));
   }, [projectId]);
+
+  useEffect(() => {
+    if (!project) return;
+    setProjectForm({
+      name: project.name,
+      departmentId: String(project.departmentId),
+      managerUserId: String(project.managerUserId),
+      status: project.status,
+    });
+  }, [project]);
 
   useEffect(() => {
     selectedTaskRef.current = selectedTask;
@@ -118,7 +149,7 @@ export default function ProjectDetail() {
       .start()
       .then(() => connection.invoke('JoinProjectGroup', projectId))
       .catch(() => {
-        setError('Failed to connect realtime comments.');
+        setError('Không thể kết nối bình luận thời gian thực.');
       });
 
     connectionRef.current = connection;
@@ -164,7 +195,7 @@ export default function ProjectDetail() {
       setShowTaskForm(false);
       setTaskForm({ title: '', status: 'To Do', startDate: '', dueDate: '' });
     } catch {
-      setError('Failed to create task.');
+      setError('Không thể tạo tác vụ.');
     } finally {
       setSavingTask(false);
     }
@@ -175,7 +206,7 @@ export default function ProjectDetail() {
       await updateTask(projectId, task.taskId, { ...task, status: newStatus });
       setTasks((prev) => prev.map((t) => (t.taskId === task.taskId ? { ...t, status: newStatus } : t)));
     } catch {
-      setError('Failed to update task status.');
+      setError('Không thể cập nhật trạng thái tác vụ.');
     }
   };
 
@@ -201,12 +232,12 @@ export default function ProjectDetail() {
   };
 
   const handleDeleteTask = async (taskId: number) => {
-    if (!confirm('Delete this task?')) return;
+    if (!confirm('Bạn có chắc muốn xóa tác vụ này?')) return;
     try {
       await deleteTask(projectId, taskId);
       setTasks((prev) => prev.filter((t) => t.taskId !== taskId));
     } catch {
-      setError('Failed to delete task.');
+      setError('Không thể xóa tác vụ.');
     }
   };
 
@@ -234,7 +265,50 @@ export default function ProjectDetail() {
       const res = await getProject(projectId);
       setProject(res.data);
     } catch {
-      setError('Failed to add member.');
+      setError('Không thể thêm thành viên.');
+    }
+  };
+
+  const handleSaveProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!project) return;
+    setSavingProject(true);
+    try {
+      await updateProject(project.projectId, {
+        name: projectForm.name,
+        departmentId: Number(projectForm.departmentId),
+        managerUserId: Number(projectForm.managerUserId),
+        status: projectForm.status,
+      });
+      const res = await getProject(project.projectId);
+      setProject(res.data);
+      setShowProjectEditModal(false);
+    } catch {
+      setError('Không thể cập nhật dự án.');
+    } finally {
+      setSavingProject(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberUserId: number) => {
+    if (!project || memberUserId === project.managerUserId) return;
+    if (!confirm('Bạn có chắc muốn xóa thành viên này khỏi dự án?')) return;
+    try {
+      await removeProjectMember(project.projectId, memberUserId);
+      const res = await getProject(project.projectId);
+      setProject(res.data);
+    } catch {
+      setError('Không thể xóa thành viên.');
+    }
+  };
+
+  const handleDeleteDocument = async (documentId: number) => {
+    if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
+    try {
+      await deleteDocument(documentId);
+      setDocuments((prev) => prev.filter((d) => d.documentId !== documentId));
+    } catch {
+      setError('Không thể xóa tài liệu.');
     }
   };
 
@@ -253,12 +327,12 @@ export default function ProjectDetail() {
     );
   }
 
-  if (!project) return <div className="text-red-500 p-4">{error || 'Project not found.'}</div>;
+  if (!project) return <div className="text-red-500 p-4">{error || 'Không tìm thấy dự án.'}</div>;
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-    { key: 'tasks', label: 'Tasks', icon: <CheckSquare size={15} /> },
-    { key: 'documents', label: 'Documents', icon: <FileUp size={15} /> },
-    { key: 'members', label: 'Members', icon: <Users size={15} /> },
+    { key: 'tasks', label: 'Tác vụ', icon: <CheckSquare size={15} /> },
+    { key: 'documents', label: 'Tài liệu', icon: <FileUp size={15} /> },
+    { key: 'members', label: 'Thành viên', icon: <Users size={15} /> },
   ];
 
   return (
@@ -277,10 +351,18 @@ export default function ProjectDetail() {
               {project.projectCode}
             </span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-              {project.status}
+              {PROJECT_STATUS_LABELS[project.status] ?? project.status}
             </span>
+            {isManager && (
+              <button
+                onClick={() => setShowProjectEditModal(true)}
+                className="text-xs px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 inline-flex items-center gap-1"
+              >
+                <Pencil size={12} /> Chỉnh sửa dự án
+              </button>
+            )}
           </div>
-          <p className="text-sm text-gray-500 mt-0.5">Department #{project.departmentId}</p>
+          <p className="text-sm text-gray-500 mt-0.5">Phòng ban #{project.departmentId}</p>
         </div>
       </div>
 
@@ -309,17 +391,17 @@ export default function ProjectDetail() {
       {tab === 'tasks' && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800">Tasks ({tasks.length})</h2>
+            <h2 className="font-semibold text-gray-800">Tác vụ ({tasks.length})</h2>
             <button
               onClick={() => setShowTaskForm(true)}
               className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition"
             >
-              <Plus size={15} /> Create Task
+              <Plus size={15} /> Tạo mới tác vụ
             </button>
           </div>
 
           {tasks.length === 0 ? (
-            <p className="text-gray-400 text-sm py-10 text-center">No tasks yet. Create one to get started.</p>
+            <p className="text-gray-400 text-sm py-10 text-center">Chưa có tác vụ. Hãy tạo mới để bắt đầu.</p>
           ) : (
             <div className="space-y-2">
               {tasks.map((task) => (
@@ -343,28 +425,28 @@ export default function ProjectDetail() {
                       }`}
                     >
                       {['To Do', 'In Progress', 'Done', 'Blocked'].map((s) => (
-                        <option key={s}>{s}</option>
+                        <option key={s} value={s}>{TASK_STATUS_LABELS[s] ?? s}</option>
                       ))}
                     </select>
                   </div>
                   <button
                     onClick={() => setEditingTask(task)}
                     className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition"
-                    title="Edit"
+                    title="Chỉnh sửa"
                   >
                     <Pencil size={14} />
                   </button>
                   <button
                     onClick={() => openComments(task)}
                     className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition"
-                    title="Comments"
+                    title="Bình luận"
                   >
                     <MessageSquare size={15} />
                   </button>
                   <button
                     onClick={() => handleDeleteTask(task.taskId)}
                     className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
-                    title="Delete"
+                    title="Xóa"
                   >
                     <X size={14} />
                   </button>
@@ -377,7 +459,7 @@ export default function ProjectDetail() {
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900">Create Task</h3>
+                  <h3 className="font-semibold text-gray-900">Tạo mới tác vụ</h3>
                   <button
                     onClick={() => setShowTaskForm(false)}
                     className="text-gray-400 hover:text-gray-600"
@@ -387,30 +469,30 @@ export default function ProjectDetail() {
                 </div>
                 <form onSubmit={handleCreateTask} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
                     <input
                       value={taskForm.title}
                       onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
                       required
-                      placeholder="Task title"
+                      placeholder="Nhập tiêu đề tác vụ"
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
                     <select
                       value={taskForm.status}
                       onChange={(e) => setTaskForm({ ...taskForm, status: e.target.value })}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
                     >
                       {['To Do', 'In Progress', 'Done', 'Blocked'].map((s) => (
-                        <option key={s}>{s}</option>
+                        <option key={s} value={s}>{TASK_STATUS_LABELS[s] ?? s}</option>
                       ))}
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu</label>
                       <input
                         type="date"
                         value={taskForm.startDate}
@@ -419,7 +501,7 @@ export default function ProjectDetail() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Hạn chót</label>
                       <input
                         type="date"
                         value={taskForm.dueDate}
@@ -434,14 +516,14 @@ export default function ProjectDetail() {
                       onClick={() => setShowTaskForm(false)}
                       className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition"
                     >
-                      Cancel
+                      Hủy
                     </button>
                     <button
                       type="submit"
                       disabled={savingTask}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition"
                     >
-                      {savingTask ? 'Creating...' : 'Create'}
+                      {savingTask ? 'Đang tạo...' : 'Tạo mới'}
                     </button>
                   </div>
                 </form>
@@ -459,7 +541,7 @@ export default function ProjectDetail() {
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {comments.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-8">No comments yet.</p>
+                  <p className="text-gray-400 text-sm text-center py-8">Chưa có bình luận.</p>
                 ) : (
                   comments.map((c) => (
                     <div key={c.commentId} className="bg-gray-50 rounded-xl p-3">
@@ -482,7 +564,7 @@ export default function ProjectDetail() {
                   <input
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Write a comment..."
+                    placeholder="Nhập bình luận..."
                     className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -496,7 +578,7 @@ export default function ProjectDetail() {
                     disabled={addingComment || !commentText.trim()}
                     className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm transition"
                   >
-                    Send
+                    Gửi
                   </button>
                 </div>
               </div>
@@ -508,17 +590,17 @@ export default function ProjectDetail() {
       {tab === 'documents' && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800">Documents ({documents.length})</h2>
+            <h2 className="font-semibold text-gray-800">Tài liệu ({documents.length})</h2>
             <button
               onClick={() => setShowUploadModal(true)}
               className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition"
             >
-              <Plus size={15} /> Upload Document
+              <Plus size={15} /> Tải lên tài liệu
             </button>
           </div>
 
           {documents.length === 0 ? (
-            <p className="text-gray-400 text-sm py-10 text-center">No documents yet.</p>
+            <p className="text-gray-400 text-sm py-10 text-center">Chưa có tài liệu.</p>
           ) : (
             <div className="space-y-2">
               {documents.map((doc) => (
@@ -546,9 +628,16 @@ export default function ProjectDetail() {
                       rel="noopener noreferrer"
                       className="text-xs text-indigo-600 hover:underline flex-shrink-0"
                     >
-                      Open
+                      Mở
                     </a>
                   )}
+                  <button
+                    onClick={() => handleDeleteDocument(doc.documentId)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+                    title="Xóa tài liệu"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -558,34 +647,122 @@ export default function ProjectDetail() {
 
       {tab === 'members' && (
         <div>
-          <h2 className="font-semibold text-gray-800 mb-4">Project Members</h2>
+          <h2 className="font-semibold text-gray-800 mb-4">Thành viên dự án</h2>
           {isManager && (
             <div className="flex gap-2 mb-5">
               <input
                 type="number"
                 value={newMemberId}
                 onChange={(e) => setNewMemberId(e.target.value)}
-                placeholder="Enter User ID"
+                placeholder="Nhập ID người dùng"
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 w-44"
               />
               <button
                 onClick={handleAddMember}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition"
               >
-                Add Member
+                Thêm thành viên
               </button>
             </div>
           )}
-          <p className="text-sm text-gray-500 mb-3">Manager: User #{project.managerUserId}</p>
+          <p className="text-sm text-gray-500 mb-3">Quản lý: Người dùng #{project.managerUserId}</p>
           {!!project.projectMembers?.length && (
             <div className="space-y-2">
               {project.projectMembers.map((m) => (
-                <div key={m.userId} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                  {m.companyEmail} (#{m.userId})
+                <div key={m.userId} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-3">
+                  <span>{m.companyEmail} (#{m.userId})</span>
+                  {isManager && m.userId !== project.managerUserId && (
+                    <button
+                      onClick={() => handleRemoveMember(m.userId)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+                      title="Xóa thành viên"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {showProjectEditModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Chỉnh sửa dự án</h3>
+              <button onClick={() => setShowProjectEditModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveProject} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tên dự án</label>
+                <input
+                  value={projectForm.name}
+                  onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
+                  required
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID phòng ban</label>
+                  <input
+                    type="number"
+                    value={projectForm.departmentId}
+                    onChange={(e) => setProjectForm({ ...projectForm, departmentId: e.target.value })}
+                    required
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID quản lý</label>
+                  <input
+                    type="number"
+                    value={projectForm.managerUserId}
+                    onChange={(e) => setProjectForm({ ...projectForm, managerUserId: e.target.value })}
+                    required
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                <select
+                  value={projectForm.status}
+                  onChange={(e) => setProjectForm({ ...projectForm, status: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                >
+                  {[
+                    { value: 'Active', label: 'Đang hoạt động' },
+                    { value: 'On Hold', label: 'Tạm dừng' },
+                    { value: 'Completed', label: 'Hoàn thành' },
+                    { value: 'Cancelled', label: 'Đã hủy' },
+                  ].map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowProjectEditModal(false)}
+                  className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingProject}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition"
+                >
+                  {savingProject ? 'Đang lưu...' : 'Lưu'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

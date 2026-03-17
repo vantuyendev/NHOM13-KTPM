@@ -59,7 +59,19 @@ public class ProjectController : ControllerBase
         if (CurrentRole != "Manager" && !project.ProjectMembers.Any(pm => pm.UserId == CurrentUserId))
             return Forbid();
 
-        return Ok(new ProjectDto(project.ProjectId, project.ProjectCode, project.Name, project.DepartmentId, project.ManagerUserId, project.Status));
+        var members = project.ProjectMembers
+            .Select(pm => new ProjectMemberDto(pm.UserId, pm.User.CompanyEmail, pm.JoinedAt))
+            .ToList();
+
+        return Ok(new ProjectDetailDto(
+            project.ProjectId,
+            project.ProjectCode,
+            project.Name,
+            project.DepartmentId,
+            project.ManagerUserId,
+            project.Status,
+            members
+        ));
     }
 
     [HttpPost]

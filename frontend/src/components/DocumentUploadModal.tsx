@@ -24,12 +24,12 @@ export default function DocumentUploadModal({ isOpen, onClose, onSubmit }: Props
     setError('');
 
     if (!file) {
-      setError('Please choose a file.');
+      setError('Vui lòng chọn tệp.');
       return;
     }
 
     if (isLargeFile && !cloudUrl.trim()) {
-      setError('Cloud URL is required for files larger than 20MB.');
+      setError('Với tệp lớn hơn 20MB, bắt buộc nhập link Cloud.');
       return;
     }
 
@@ -44,7 +44,7 @@ export default function DocumentUploadModal({ isOpen, onClose, onSubmit }: Props
       setCloudUrl('');
       onClose();
     } catch {
-      setError('Failed to upload document.');
+      setError('Không thể tải lên tài liệu.');
     } finally {
       setSaving(false);
     }
@@ -54,13 +54,13 @@ export default function DocumentUploadModal({ isOpen, onClose, onSubmit }: Props
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Upload Document</h3>
+          <h3 className="font-semibold text-gray-900">Tải lên tài liệu</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="document-file-input" className="block text-sm font-medium text-gray-700 mb-1">Select file</label>
+            <label htmlFor="document-file-input" className="block text-sm font-medium text-gray-700 mb-1">Chọn tệp</label>
             <input
               id="document-file-input"
               type="file"
@@ -78,15 +78,15 @@ export default function DocumentUploadModal({ isOpen, onClose, onSubmit }: Props
             <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-3 py-2 text-sm flex gap-2 items-start">
               <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium">File exceeds 20MB. Please use cloud storage.</p>
-                <p className="text-xs mt-0.5">Provide a cloud link for this file below.</p>
+                <p className="font-medium">File vượt quá 20MB. Vui lòng sử dụng link Cloud.</p>
+                <p className="text-xs mt-0.5">Hãy nhập đường dẫn Cloud cho tệp này bên dưới.</p>
               </div>
             </div>
           )}
 
           {isLargeFile && (
             <div>
-              <label htmlFor="document-cloud-url-input" className="block text-sm font-medium text-gray-700 mb-1">Cloud URL</label>
+              <label htmlFor="document-cloud-url-input" className="block text-sm font-medium text-gray-700 mb-1">Link Cloud</label>
               <input
                 id="document-cloud-url-input"
                 type="url"
@@ -100,16 +100,16 @@ export default function DocumentUploadModal({ isOpen, onClose, onSubmit }: Props
 
           {!isLargeFile && file && (
             <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-3 py-2 text-xs">
-              File size is within 20MB. Standard internal upload will be used.
+              Tệp không vượt 20MB. Hệ thống sẽ dùng lưu trữ nội bộ.
             </div>
           )}
 
           {error && <div className="bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-2 rounded-lg">{error}</div>}
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
             <button type="submit" disabled={saving} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition inline-flex items-center justify-center gap-1.5">
-              <Upload size={14} /> {saving ? 'Uploading...' : 'Upload'}
+              <Upload size={14} /> {saving ? 'Đang tải lên...' : 'Tải lên'}
             </button>
           </div>
         </form>

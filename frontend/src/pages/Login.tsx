@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, X } from 'lucide-react';
 import axios from 'axios';
 import { login as loginApi, changeFirstPassword } from '../services/api';
@@ -46,14 +46,14 @@ export default function Login() {
     } catch (err) {
       if (axios.isAxiosError(err)) {
         if (!err.response) {
-          setError('Cannot connect to server. Check VITE_API_BASE_URL and backend CORS settings.');
+          setError('Không thể kết nối máy chủ. Vui lòng kiểm tra cấu hình API và CORS.');
         } else if (err.response.status === 401) {
-          setError('Invalid email or password.');
+          setError('Email hoặc mật khẩu không đúng.');
         } else {
-          setError('Login failed. Please try again.');
+          setError('Đăng nhập thất bại. Vui lòng thử lại.');
         }
       } else {
-        setError('Login failed. Please try again.');
+        setError('Đăng nhập thất bại. Vui lòng thử lại.');
       }
     } finally {
       setLoading(false);
@@ -64,11 +64,11 @@ export default function Login() {
     e.preventDefault();
     setModalError('');
     if (newPw !== confirmPw) {
-      setModalError('New passwords do not match.');
+      setModalError('Mật khẩu mới không khớp.');
       return;
     }
     if (newPw.length < 6) {
-      setModalError('Password must be at least 6 characters.');
+      setModalError('Mật khẩu phải có ít nhất 6 ký tự.');
       return;
     }
     setModalLoading(true);
@@ -82,7 +82,7 @@ export default function Login() {
       setShowModal(false);
       navigate('/dashboard');
     } catch {
-      setModalError('Failed to change password. Check your current password.');
+      setModalError('Đổi mật khẩu thất bại. Vui lòng kiểm tra mật khẩu hiện tại.');
     } finally {
       setModalLoading(false);
     }
@@ -97,7 +97,7 @@ export default function Login() {
             <Lock className="text-white" size={22} />
           </div>
           <h1 className="text-2xl font-bold text-white">ProjectStorage</h1>
-          <p className="text-gray-400 text-sm mt-1">Sign in to your company account</p>
+          <p className="text-gray-400 text-sm mt-1">Đăng nhập tài khoản công ty</p>
         </div>
 
         {/* Card */}
@@ -110,7 +110,7 @@ export default function Login() {
             )}
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1.5">Company Email</label>
+              <label className="block text-sm text-gray-300 mb-1.5">Email công ty</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -118,14 +118,14 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="you@company.com"
+                  placeholder="ban@congty.com"
                   className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-white placeholder-gray-500 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1.5">Password</label>
+              <label className="block text-sm text-gray-300 mb-1.5">Mật khẩu</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -151,8 +151,14 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition"
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Đang đăng nhập…' : 'Đăng nhập'}
             </button>
+
+            <div className="text-right">
+              <Link to="/forgot-password" className="text-xs text-indigo-300 hover:text-indigo-200">
+                Quên mật khẩu?
+              </Link>
+            </div>
           </form>
         </div>
       </div>
@@ -162,7 +168,7 @@ export default function Login() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold text-lg">Change Your Password</h2>
+              <h2 className="text-white font-semibold text-lg">Đổi mật khẩu</h2>
               <button
                 onClick={() => {
                   setShowModal(false);
@@ -174,7 +180,7 @@ export default function Login() {
               </button>
             </div>
             <p className="text-gray-400 text-sm mb-5">
-              This is your first login. You must change your password to continue.
+              Đây là lần đăng nhập đầu tiên. Bạn cần đổi mật khẩu để tiếp tục.
             </p>
             <form onSubmit={handleChangePassword} className="space-y-4">
               {modalError && (
@@ -183,7 +189,7 @@ export default function Login() {
                 </div>
               )}
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Current Password</label>
+                <label className="block text-sm text-gray-300 mb-1">Mật khẩu hiện tại</label>
                 <input
                   type="password"
                   value={currentPw}
@@ -193,7 +199,7 @@ export default function Login() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-300 mb-1">New Password</label>
+                <label className="block text-sm text-gray-300 mb-1">Mật khẩu mới</label>
                 <input
                   type="password"
                   value={newPw}
@@ -203,7 +209,7 @@ export default function Login() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Confirm New Password</label>
+                <label className="block text-sm text-gray-300 mb-1">Xác nhận mật khẩu mới</label>
                 <input
                   type="password"
                   value={confirmPw}
@@ -217,7 +223,7 @@ export default function Login() {
                 disabled={modalLoading}
                 className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition mt-2"
               >
-                {modalLoading ? 'Changing…' : 'Change Password & Continue'}
+                {modalLoading ? 'Đang đổi…' : 'Đổi mật khẩu và tiếp tục'}
               </button>
             </form>
           </div>

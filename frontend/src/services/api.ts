@@ -47,9 +47,12 @@ export const changeFirstPassword = (currentPassword: string, newPassword: string
 export const forgotPassword = (companyEmail: string) =>
   api.post('/auth/forgot-password', { companyEmail });
 
+export const resetPassword = (token: string, newPassword: string) =>
+  api.post('/auth/reset-password', { token, newPassword });
+
 export const globalSearch = (query: string) =>
-  api.get<import('../types').GlobalSearchResponse>('/search/global', {
-    params: { query },
+  api.get<import('../types').GlobalSearchResponse>('/search', {
+    params: { keyword: query },
   });
 
 // Projects
@@ -84,6 +87,7 @@ export const addComment = (projectId: number, taskId: number, content: string) =
 // Documents
 export const getDocuments = (projectId: number) =>
   api.get<import('../types').Document[]>(`/document/project/${projectId}`);
+export const deleteDocument = (documentId: number) => api.delete(`/document/${documentId}`);
 export const uploadDocument = (data: {
   projectId: number;
   taskId?: number;
@@ -102,6 +106,8 @@ export const deleteDepartment = (id: number) => api.delete(`/department/${id}`);
 // Users
 export const getUsers = () => api.get<import('../types').User[]>('/user');
 export const getMyProfile = () => api.get<import('../types').User>('/user/me');
+export const updateMyProfile = (data: { systemUserId: string; companyEmail: string }) =>
+  api.put<import('../types').User>('/user/me', data);
 export const createUser = (data: {
   systemUserId: string;
   companyEmail: string;
@@ -112,3 +118,5 @@ export const createUser = (data: {
 export const updateUser = (id: number, data: Partial<import('../types').User>) =>
   api.put(`/user/${id}`, data);
 export const deleteUser = (id: number) => api.delete(`/user/${id}`);
+
+export const getMyTasks = () => api.get<import('../types').PersonalTask[]>('/task/my');

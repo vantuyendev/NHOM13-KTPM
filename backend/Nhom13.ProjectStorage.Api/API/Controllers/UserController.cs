@@ -33,7 +33,43 @@ public class UserController : ControllerBase
         if (user == null)
             return NotFound(new { error = "User not found." });
 
-        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive));
+        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive, user.MustChangePassword));
+    }
+
+    /// <summary>PUT /api/user/me - Any authenticated user can update their own basic profile.</summary>
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateMyProfileRequest request)
+    {
+        var user = await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.UserId == CurrentUserId && u.DeletedAt == null);
+
+        if (user == null)
+            return NotFound(new { error = "User not found." });
+
+        var normalizedSystemId = request.SystemUserId.Trim();
+        var normalizedEmail = request.CompanyEmail.Trim().ToLowerInvariant();
+
+        if (string.IsNullOrWhiteSpace(normalizedSystemId) || string.IsNullOrWhiteSpace(normalizedEmail))
+            return BadRequest(new { error = "SystemUserId and CompanyEmail are required." });
+
+        var idTaken = await _context.Users
+            .AnyAsync(u => u.UserId != user.UserId && u.SystemUserId == normalizedSystemId && u.DeletedAt == null);
+        if (idTaken)
+            return Conflict(new { error = "SystemUserId is already in use." });
+
+        var emailTaken = await _context.Users
+            .AnyAsync(u => u.UserId != user.UserId && u.CompanyEmail == normalizedEmail && u.DeletedAt == null);
+        if (emailTaken)
+            return Conflict(new { error = "Email is already in use." });
+
+        user.SystemUserId = normalizedSystemId;
+        user.CompanyEmail = normalizedEmail;
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive, user.MustChangePassword));
     }
 
     /// <summary>GET /api/user - Manager can list all users.</summary>
@@ -46,7 +82,7 @@ public class UserController : ControllerBase
             .Where(u => u.DeletedAt == null)
             .ToListAsync();
 
-        return Ok(users.Select(u => new UserProfileDto(u.UserId, u.SystemUserId, u.CompanyEmail, u.RoleId, u.Role.RoleName, u.DepartmentId, u.IsActive)));
+        return Ok(users.Select(u => new UserProfileDto(u.UserId, u.SystemUserId, u.CompanyEmail, u.RoleId, u.Role.RoleName, u.DepartmentId, u.IsActive, u.MustChangePassword)));
     }
 
     /// <summary>GET /api/user/{id} - Manager can view any user's profile.</summary>
@@ -61,7 +97,7 @@ public class UserController : ControllerBase
         if (user == null)
             return NotFound(new { error = "User not found." });
 
-        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive));
+        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive, user.MustChangePassword));
     }
 
     /// <summary>POST /api/user - Manager adds a new user.</summary>
@@ -101,7 +137,7 @@ public class UserController : ControllerBase
 
         await _context.Entry(user).Reference(u => u.Role).LoadAsync();
         return CreatedAtAction(nameof(GetById), new { id = user.UserId },
-            new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive));
+            new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive, user.MustChangePassword));
     }
 
     /// <summary>PUT /api/user/{id} - Manager updates a user.</summary>
@@ -122,7 +158,7 @@ public class UserController : ControllerBase
         await _context.SaveChangesAsync();
 
         await _context.Entry(user).Reference(u => u.Role).LoadAsync();
-        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive));
+        return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive, user.MustChangePassword));
     }
 
     /// <summary>DELETE /api/user/{id} - Manager soft-deletes a user.</summary>

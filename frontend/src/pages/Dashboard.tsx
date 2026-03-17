@@ -12,6 +12,13 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelled: 'bg-red-100 text-red-700',
 };
 
+const PROJECT_STATUS_LABELS: Record<string, string> = {
+  Active: 'Đang hoạt động',
+  Completed: 'Hoàn thành',
+  'On Hold': 'Tạm dừng',
+  Cancelled: 'Đã hủy',
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { isManager, user } = useAuth();
@@ -27,7 +34,7 @@ export default function Dashboard() {
       const res = await getProjects();
       setProjects(res.data);
     } catch {
-      setError('Failed to load projects.');
+      setError('Không thể tải danh sách dự án.');
     } finally {
       setLoading(false);
     }
@@ -50,7 +57,7 @@ export default function Dashboard() {
       setShowCreate(false);
       setForm({ projectCode: '', name: '', departmentId: '', managerUserId: '', status: 'Active' });
     } catch {
-      setError('Failed to create project.');
+      setError('Không thể tạo dự án.');
     } finally {
       setCreating(false);
     }
@@ -58,12 +65,12 @@ export default function Dashboard() {
 
   const handleDelete = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Delete this project?')) return;
+    if (!confirm('Bạn có chắc muốn xóa dự án này?')) return;
     try {
       await deleteProject(id);
       setProjects((prev) => prev.filter((p) => p.projectId !== id));
     } catch {
-      setError('Failed to delete project.');
+      setError('Không thể xóa dự án.');
     }
   };
 
@@ -78,7 +85,7 @@ export default function Dashboard() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      setError('Failed to download project.');
+      setError('Không thể tải dự án.');
     }
   };
 
@@ -87,9 +94,9 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Projects</h1>
+          <h1 className="text-xl font-bold text-gray-900">Dự án</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {isManager ? 'All company projects' : 'Projects you are a member of'}
+            {isManager ? 'Tất cả dự án của công ty' : 'Các dự án bạn đang tham gia'}
           </p>
         </div>
         {isManager && (
@@ -97,7 +104,7 @@ export default function Dashboard() {
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
           >
-            <Plus size={16} /> New Project
+            <Plus size={16} /> Tạo mới dự án
           </button>
         )}
       </div>
@@ -121,7 +128,7 @@ export default function Dashboard() {
       ) : projects.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <FolderKanban size={40} className="mx-auto mb-3 opacity-30" />
-          <p>No projects found.</p>
+          <p>Không tìm thấy dự án.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -141,10 +148,10 @@ export default function Dashboard() {
                     STATUS_COLORS[proj.status] ?? 'bg-gray-100 text-gray-600'
                   }`}
                 >
-                  {proj.status}
+                  {PROJECT_STATUS_LABELS[proj.status] ?? proj.status}
                 </span>
               </div>
-              <p className="text-xs text-gray-400">Dept #{proj.departmentId}</p>
+              <p className="text-xs text-gray-400">Phòng ban #{proj.departmentId}</p>
 
               {/* Actions */}
               <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition">
@@ -153,7 +160,7 @@ export default function Dashboard() {
                   className="flex items-center gap-1.5 text-xs bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 text-gray-600 px-2.5 py-1 rounded-md transition"
                 >
                   <Download size={13} />
-                  Download
+                  Tải xuống
                 </button>
                 {isManager && (
                   <button
@@ -161,7 +168,7 @@ export default function Dashboard() {
                     className="flex items-center gap-1.5 text-xs bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-600 px-2.5 py-1 rounded-md transition"
                   >
                     <Trash2 size={13} />
-                    Delete
+                    Xóa
                   </button>
                 )}
               </div>
@@ -175,14 +182,14 @@ export default function Dashboard() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-gray-900">New Project</h2>
+              <h2 className="font-semibold text-gray-900">Tạo mới dự án</h2>
               <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={18} />
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Code</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mã dự án</label>
                 <input
                   value={form.projectCode}
                   onChange={(e) => setForm({ ...form, projectCode: e.target.value })}
@@ -192,18 +199,18 @@ export default function Dashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tên dự án</label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
-                  placeholder="Project name"
+                  placeholder="Nhập tên dự án"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department ID</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID phòng ban</label>
                   <input
                     type="number"
                     value={form.departmentId}
@@ -213,14 +220,19 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
                   >
-                    {['Active', 'On Hold', 'Completed', 'Cancelled'].map((s) => (
-                      <option key={s}>{s}</option>
+                    {[
+                      { value: 'Active', label: 'Đang hoạt động' },
+                      { value: 'On Hold', label: 'Tạm dừng' },
+                      { value: 'Completed', label: 'Hoàn thành' },
+                      { value: 'Cancelled', label: 'Đã hủy' },
+                    ].map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
                     ))}
                   </select>
                 </div>
@@ -231,14 +243,14 @@ export default function Dashboard() {
                   onClick={() => setShowCreate(false)}
                   className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition"
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition"
                 >
-                  {creating ? 'Creating…' : 'Create'}
+                  {creating ? 'Đang tạo…' : 'Tạo mới'}
                 </button>
               </div>
             </form>

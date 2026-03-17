@@ -20,10 +20,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-  { to: '/projects', label: 'Projects', icon: <FolderKanban size={18} /> },
-  { to: '/company', label: 'Company', icon: <Building2 size={18} /> },
-  { to: '/profile', label: 'My Profile', icon: <User size={18} /> },
+  { to: '/dashboard', label: 'Bảng điều khiển', icon: <LayoutDashboard size={18} /> },
+  { to: '/projects', label: 'Dự án', icon: <FolderKanban size={18} /> },
+  { to: '/company', label: 'Công ty', icon: <Building2 size={18} /> },
+  { to: '/profile', label: 'Hồ sơ cá nhân', icon: <User size={18} /> },
 ];
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -69,7 +69,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                   : 'bg-sky-500/20 text-sky-300'
               }`}
             >
-              {user?.roleName ?? 'User'}
+              {user?.roleName === 'Manager' ? 'Quản lý' : user?.roleName === 'Member' ? 'Thành viên' : 'Người dùng'}
             </span>
           </div>
         )}
@@ -103,10 +103,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-2 py-2 rounded-md text-sm text-gray-400 hover:bg-red-700/40 hover:text-red-300 transition-colors"
-            title={collapsed ? 'Logout' : undefined}
+            title={collapsed ? 'Đăng xuất' : undefined}
           >
             <LogOut size={18} className="flex-shrink-0" />
-            {!collapsed && <span>Logout</span>}
+            {!collapsed && <span>Đăng xuất</span>}
           </button>
         </div>
       </aside>
