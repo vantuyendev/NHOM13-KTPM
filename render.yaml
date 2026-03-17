@@ -3,7 +3,8 @@ services:
   - type: web
     name: nhom13-backend
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    rootDir: backend
+    dockerfilePath: Dockerfile
     region: singapore
     plan: free
     healthCheckPath: /
@@ -27,11 +28,10 @@ services:
   - type: web
     name: nhom13-frontend
     runtime: docker
-    dockerfilePath: ./frontend/Dockerfile
+    rootDir: frontend
+    dockerfilePath: Dockerfile
     region: singapore
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm run preview
     envVars:
       - key: VITE_API_BASE_URL
         sync: false  # Ví dụ: https://nhom13-backend.onrender.com (không cần thêm /api)
