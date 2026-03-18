@@ -127,10 +127,16 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!token || !projectId) return;
 
-    const hubUrl = import.meta.env.VITE_HUB_URL ?? '/hubs/tasks';
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? '';
+    const normalizedApiBase = apiBase ? apiBase.replace(/\/+$/, '') : '';
+    const hubBase = normalizedApiBase.endsWith('/api')
+      ? normalizedApiBase.slice(0, -4)
+      : normalizedApiBase;
+    const hubUrl = import.meta.env.VITE_HUB_URL ?? `${hubBase || ''}/hubs/tasks`;
+
     const connection = new HubConnectionBuilder()
       .withUrl(hubUrl, {
-        accessTokenFactory: () => token,
+        accessTokenFactory: () => localStorage.getItem('token') ?? '',
       })
       .withAutomaticReconnect()
       .build();
@@ -258,9 +264,14 @@ export default function ProjectDetail() {
   };
 
   const handleAddMember = async () => {
-    if (!newMemberId) return;
+    const userId = Number(newMemberId.trim());
+    if (!Number.isInteger(userId) || userId <= 0) {
+      setError('ID thành viên không hợp lệ.');
+      return;
+    }
+
     try {
-      await addProjectMember(projectId, Number(newMemberId));
+      await addProjectMember(projectId, userId);
       setNewMemberId('');
       const res = await getProject(projectId);
       setProject(res.data);

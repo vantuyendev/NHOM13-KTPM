@@ -11,7 +11,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /workspaces/NHOM13-KTPM/backend/Nhom13.ProjectStorage.Api
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (40ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (36ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT COUNT(*) FROM "sqlite_master" WHERE "type" = 'table' AND "rootpage" IS NOT NULL;
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
@@ -24,7 +24,7 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           SELECT 1
           FROM "Departments" AS "d")
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
       FROM "Departments" AS "d"
       ORDER BY "d"."DepartmentId"
@@ -42,32 +42,50 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           FROM "Users" AS "u"
           WHERE "u"."CompanyEmail" = 'member@company.com')
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      Executed DbCommand (2ms) [Parameters=[@userId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
       FROM "Projects" AS "p"
+      INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+      WHERE EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p0"
+          WHERE "p"."ProjectId" = "p0"."ProjectId" AND "p0"."UserId" = @userId)
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      Executed DbCommand (0ms) [Parameters=[@userId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
       FROM "Projects" AS "p"
+      INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+      WHERE EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p0"
+          WHERE "p"."ProjectId" = "p0"."ProjectId" AND "p0"."UserId" = @userId)
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."TaskId", "t"."ProjectId", "p"."Name", "t"."Title", "t"."Status", "t"."StartDate", "t"."DueDate"
-      FROM "Tasks" AS "t"
-      INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
-      ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
+      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
+      FROM "Departments" AS "d"
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
       FROM "Users" AS "u"
       INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."UserId" = @CurrentUserId
-      LIMIT 1
+      WHERE "u"."DeletedAt" IS NULL
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."TaskId", "t"."ProjectId", "p"."Name", "t"."Title", "t"."Status", "t"."StartDate", "t"."DueDate"
-      FROM "Tasks" AS "t"
-      INNER JOIN "Projects" AS "p" ON "t"."ProjectId" = "p"."ProjectId"
-      ORDER BY COALESCE("t"."DueDate", '9999-12-31 23:59:59.9999999')
+      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
+      FROM "Departments" AS "d"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
+      FROM "Users" AS "u"
+      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
+      WHERE "u"."DeletedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@email='?' (Size = 19)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
+      FROM "Users" AS "u"
+      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
+      WHERE "u"."CompanyEmail" = @email AND "u"."DeletedAt" IS NULL
+      LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
@@ -77,40 +95,423 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
-      FROM "Departments" AS "d"
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@userId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Users" AS "u"
+          WHERE "u"."UserId" = @userId AND "u"."DeletedAt" IS NULL)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "ProjectMembers" ("ProjectId", "UserId", "JoinedAt")
+      VALUES (@p0, @p1, @p2);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@userId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Users" AS "u"
+          WHERE "u"."UserId" = @userId AND "u"."DeletedAt" IS NULL)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "ProjectMembers" ("ProjectId", "UserId", "JoinedAt")
+      VALUES (@p0, @p1, @p2);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@email='?' (Size = 18)], CommandType='Text', CommandTimeout='30']
       SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
       FROM "Users" AS "u"
       INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."DeletedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
-      FROM "Users" AS "u"
-      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
-      WHERE "u"."DeletedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."DepartmentId", "d"."Description", "d"."Name"
-      FROM "Departments" AS "d"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
-      FROM "Projects" AS "p"
-      WHERE "p"."ProjectId" = @p
+      WHERE "u"."CompanyEmail" = @email AND "u"."DeletedAt" IS NULL
       LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
-      DELETE FROM "Projects"
-      WHERE "ProjectId" = @p0
-      RETURNING 1;
+      Executed DbCommand (0ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
+      FROM "Users" AS "u"
+      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
+      WHERE "u"."UserId" = @CurrentUserId
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@userId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+      FROM "Projects" AS "p"
+      INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+      WHERE EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p0"
+          WHERE "p"."ProjectId" = "p0"."ProjectId" AND "p0"."UserId" = @userId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@userId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+      FROM "Projects" AS "p"
+      INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+      WHERE EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p0"
+          WHERE "p"."ProjectId" = "p0"."ProjectId" AND "p0"."UserId" = @userId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@email='?' (Size = 19)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
+      FROM "Users" AS "u"
+      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
+      WHERE "u"."CompanyEmail" = @email AND "u"."DeletedAt" IS NULL
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId", "r"."RoleId", "r"."RoleName"
+      FROM "Users" AS "u"
+      INNER JOIN "Roles" AS "r" ON "u"."RoleId" = "r"."RoleId"
+      WHERE "u"."UserId" = @CurrentUserId
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status"
+      FROM "Projects" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32), @CurrentUserId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "ProjectMembers" AS "p"
+          WHERE "p"."ProjectId" = @projectId AND "p"."UserId" = @CurrentUserId)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."TaskId", "t"."DueDate", "t"."ProjectId", "t"."StartDate", "t"."Status", "t"."Title"
+      FROM "Tasks" AS "t"
+      WHERE "t"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."DocumentId", "d"."CloudUrl", "d"."FileSizeBytes", "d"."InternalPath", "d"."ProjectId", "d"."StorageType", "d"."TaskId"
+      FROM "Documents" AS "d"
+      WHERE "d"."ProjectId" = @projectId
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@projectId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ProjectId", "s"."DepartmentId", "s"."ManagerUserId", "s"."Name", "s"."ProjectCode", "s"."Status", "s"."UserId", "s0"."ProjectId", "s0"."UserId", "s0"."JoinedAt", "s0"."UserId0", "s0"."CompanyEmail", "s0"."DeletedAt", "s0"."DepartmentId", "s0"."IsActive", "s0"."MustChangePassword", "s0"."PasswordHash", "s0"."RoleId", "s0"."SystemUserId", "s"."CompanyEmail", "s"."DeletedAt", "s"."DepartmentId0", "s"."IsActive", "s"."MustChangePassword", "s"."PasswordHash", "s"."RoleId", "s"."SystemUserId"
+      FROM (
+          SELECT "p"."ProjectId", "p"."DepartmentId", "p"."ManagerUserId", "p"."Name", "p"."ProjectCode", "p"."Status", "u"."UserId", "u"."CompanyEmail", "u"."DeletedAt", "u"."DepartmentId" AS "DepartmentId0", "u"."IsActive", "u"."MustChangePassword", "u"."PasswordHash", "u"."RoleId", "u"."SystemUserId"
+          FROM "Projects" AS "p"
+          INNER JOIN "Users" AS "u" ON "p"."ManagerUserId" = "u"."UserId"
+          WHERE "p"."ProjectId" = @projectId
+          LIMIT 1
+      ) AS "s"
+      LEFT JOIN (
+          SELECT "p0"."ProjectId", "p0"."UserId", "p0"."JoinedAt", "u0"."UserId" AS "UserId0", "u0"."CompanyEmail", "u0"."DeletedAt", "u0"."DepartmentId", "u0"."IsActive", "u0"."MustChangePassword", "u0"."PasswordHash", "u0"."RoleId", "u0"."SystemUserId"
+          FROM "ProjectMembers" AS "p0"
+          INNER JOIN "Users" AS "u0" ON "p0"."UserId" = "u0"."UserId"
+      ) AS "s0" ON "s"."ProjectId" = "s0"."ProjectId"
+      ORDER BY "s"."ProjectId", "s"."UserId", "s0"."ProjectId", "s0"."UserId"

@@ -83,15 +83,27 @@ builder.Services.AddCors(options =>
     {
         if (string.IsNullOrWhiteSpace(corsAllowedOrigins))
         {
-            // Safe for this project because auth is JWT bearer (no cookie credentials).
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            policy
+                .WithOrigins(
+                    "http://localhost:5173",
+                    "http://127.0.0.1:5173",
+                    "https://localhost:5173",
+                    "https://127.0.0.1:5173"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         }
         else
         {
             var origins = corsAllowedOrigins
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-            policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+            policy
+                .WithOrigins(origins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         }
     });
 });

@@ -72,9 +72,9 @@ public class UserController : ControllerBase
         return Ok(new UserProfileDto(user.UserId, user.SystemUserId, user.CompanyEmail, user.RoleId, user.Role.RoleName, user.DepartmentId, user.IsActive, user.MustChangePassword));
     }
 
-    /// <summary>GET /api/user - Manager can list all users.</summary>
+    /// <summary>GET /api/user - Any authenticated user can list users.</summary>
     [HttpGet]
-    [Authorize(Roles = "Manager")]
+    [Authorize]
     public async Task<IActionResult> GetAll()
     {
         var users = await _context.Users
@@ -85,9 +85,9 @@ public class UserController : ControllerBase
         return Ok(users.Select(u => new UserProfileDto(u.UserId, u.SystemUserId, u.CompanyEmail, u.RoleId, u.Role.RoleName, u.DepartmentId, u.IsActive, u.MustChangePassword)));
     }
 
-    /// <summary>GET /api/user/{id} - Manager can view any user's profile.</summary>
+    /// <summary>GET /api/user/{id} - Any authenticated user can view a user's profile.</summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "Manager")]
+    [Authorize]
     public async Task<IActionResult> GetById(int id)
     {
         var user = await _context.Users

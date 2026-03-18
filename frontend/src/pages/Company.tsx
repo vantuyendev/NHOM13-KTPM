@@ -8,7 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import type { Department, User } from '../types';
 
 export default function Company() {
-  const { isManager } = useAuth();
+  const { isManager, user } = useAuth();
+  const isMember = user?.roleName === 'Member' || (user as { role?: string } | null)?.role === 'Member';
+  const canManageCompany = isManager && !isMember;
   const [departments, setDepartments] = useState<Department[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -173,7 +175,7 @@ export default function Company() {
             <h2 className="font-semibold text-gray-800">Phòng ban</h2>
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{departments.length}</span>
           </div>
-          {isManager && (
+          {canManageCompany && (
             <button onClick={openCreateDept} className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
               <Plus size={15} /> Thêm phòng ban
             </button>
@@ -202,7 +204,7 @@ export default function Company() {
                       {dept.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{dept.description}</p>}
                       <p className="text-xs text-gray-400 mt-1">{count} nhân viên</p>
                     </div>
-                    {isManager && (
+                    {canManageCompany && (
                       <div className="flex gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => openEditDept(dept)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition"><Pencil size={13} /></button>
                         <button onClick={() => handleDeleteDept(dept.departmentId)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"><Trash2 size={13} /></button>
@@ -230,7 +232,7 @@ export default function Company() {
               </span>
             )}
           </div>
-          {isManager && (
+          {canManageCompany && (
             <button onClick={() => setShowUserForm(true)} className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
               <Plus size={15} /> Thêm nhân viên
             </button>
@@ -249,7 +251,7 @@ export default function Company() {
                   <th className="px-4 py-3 text-left font-medium">Vai trò</th>
                   <th className="px-4 py-3 text-left font-medium">Phòng ban</th>
                   <th className="px-4 py-3 text-left font-medium">Trạng thái</th>
-                  {isManager && <th className="px-4 py-3" />}
+                  {canManageCompany && <th className="px-4 py-3" />}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -270,7 +272,7 @@ export default function Company() {
                           {user.isActive ? 'Hoạt động' : 'Ngưng hoạt động'}
                         </span>
                       </td>
-                      {isManager && (
+                      {canManageCompany && (
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex items-center gap-1">
                             <button onClick={() => openEditUser(user)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition">

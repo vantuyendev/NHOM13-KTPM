@@ -134,18 +134,35 @@ public class ProjectController : ControllerBase
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> AddMember(int projectId, int userId)
     {
-        var project = await _uow.Projects.GetProjectWithMembersAsync(projectId);
-        if (project == null)
-            return NotFound(new { error = "Project not found." });
+        try
+        {
+            var project = await _uow.Projects.GetProjectWithMembersAsync(projectId);
+            if (project == null)
+                return NotFound(new { error = "Project not found." });
 
-        if (project.ProjectMembers.Any(pm => pm.UserId == userId))
-            return Conflict(new { error = "User is already a member of this project." });
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == userId && u.DeletedAt == null);
+            if (!userExists)
+                return NotFound(new { error = "User not found." });
 
-        var member = new ProjectMember { ProjectId = projectId, UserId = userId, JoinedAt = DateTime.UtcNow };
-        _context.ProjectMembers.Add(member);
-        await _context.SaveChangesAsync();
+            if (project.ProjectMembers.Any(pm => pm.UserId == userId))
+                return Conflict(new { error = "User is already a member of this project." });
 
-        return Ok(new { message = "Member added successfully." });
+            var member = new ProjectMember
+            {
+                ProjectId = projectId,
+                UserId = userId,
+                JoinedAt = DateTime.UtcNow
+            };
+
+            _context.ProjectMembers.Add(member);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Member added successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = "Failed to add member.", detail = ex.Message });
+        }
     }
 
     [HttpDelete("{projectId}/members/{userId}")]
