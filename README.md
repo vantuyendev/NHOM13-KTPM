@@ -1,8 +1,8 @@
 # NHOM13-KTPM
 
-He thong quan ly du an noi bo.
+Hệ thống quản lý dự án nội bộ.
 
-## Chay nhanh
+## Quick run
 
 Yeu cau: .NET SDK 10+, Node.js 18+.
 
@@ -13,11 +13,10 @@ bash start.sh
 Sau khi chay:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5175
-- Swagger: http://localhost:5175/swagger
 
 Database dung SQLite, tu tao khi backend khoi dong lan dau.
 
-## Chay test
+## Run test
 
 Backend:
 
@@ -33,7 +32,7 @@ cd frontend
 npm test
 ```
 
-Demo account:
+## Demo account
 
 `Manager`
 ```bash
