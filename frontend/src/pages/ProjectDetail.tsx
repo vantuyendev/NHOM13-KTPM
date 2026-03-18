@@ -22,13 +22,14 @@ import {
   getDocuments,
   getProject,
   getTasks,
+  getUsers,
   removeProjectMember,
   updateProject,
   updateTask,
   uploadDocument,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import type { Comment, Document, Project, Task } from '../types';
+import type { Comment, Document, Project, Task, User } from '../types';
 import DocumentUploadModal from '../components/DocumentUploadModal';
 import TaskEditModal from '../components/TaskEditModal';
 
@@ -88,7 +89,8 @@ export default function ProjectDetail() {
   const [projectForm, setProjectForm] = useState({ name: '', departmentId: '', managerUserId: '', status: 'Active' });
   const [savingProject, setSavingProject] = useState(false);
 
-  const [newMemberId, setNewMemberId] = useState('');
+  const [companyUsers, setCompanyUsers] = useState<User[]>([]);
+  const [selectedMemberUserId, setSelectedMemberUserId] = useState('');
 
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -127,16 +129,15 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!token || !projectId) return;
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? '';
-    const normalizedApiBase = apiBase ? apiBase.replace(/\/+$/, '') : '';
-    const hubBase = normalizedApiBase.endsWith('/api')
-      ? normalizedApiBase.slice(0, -4)
-      : normalizedApiBase;
-    const hubUrl = import.meta.env.VITE_HUB_URL ?? `${hubBase || ''}/hubs/tasks`;
+    const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+    const normalizedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/, '');
+    const apiBaseUrl = normalizedApiBaseUrl.endsWith('/api')
+      ? normalizedApiBaseUrl.slice(0, -4)
+      : normalizedApiBaseUrl;
 
     const connection = new HubConnectionBuilder()
-      .withUrl(hubUrl, {
-        accessTokenFactory: () => localStorage.getItem('token') ?? '',
+      .withUrl(`${apiBaseUrl}/hubs/tasks`, {
+        accessTokenFactory: () => localStorage.getItem('token') || '',
       })
       .withAutomaticReconnect()
       .build();
@@ -168,6 +169,13 @@ export default function ProjectDetail() {
       connectionRef.current = null;
     };
   }, [projectId, token]);
+
+  useEffect(() => {
+    if (!isManager) return;
+    getUsers()
+      .then((res) => setCompanyUsers(res.data))
+      .catch(() => setError('Không thể tải danh sách người dùng.'));
+  }, [isManager]);
 
   const openComments = async (task: Task) => {
     setSelectedTask(task);
@@ -264,15 +272,15 @@ export default function ProjectDetail() {
   };
 
   const handleAddMember = async () => {
-    const userId = Number(newMemberId.trim());
+    const userId = Number(selectedMemberUserId);
     if (!Number.isInteger(userId) || userId <= 0) {
-      setError('ID thành viên không hợp lệ.');
+      setError('Vui lòng chọn thành viên hợp lệ.');
       return;
     }
 
     try {
       await addProjectMember(projectId, userId);
-      setNewMemberId('');
+      setSelectedMemberUserId('');
       const res = await getProject(projectId);
       setProject(res.data);
     } catch {
@@ -329,6 +337,12 @@ export default function ProjectDetail() {
     if (!project.projectMembers) return true;
     return project.projectMembers.some((m) => m.userId === user.userId);
   }, [isManager, project, user]);
+
+  const availableUsers = useMemo(() => {
+    if (!project?.projectMembers?.length) return companyUsers;
+    const existingMemberIds = new Set(project.projectMembers.map((m) => m.userId));
+    return companyUsers.filter((u) => !existingMemberIds.has(u.userId));
+  }, [companyUsers, project?.projectMembers]);
 
   if (loading) {
     return (
@@ -661,15 +675,21 @@ export default function ProjectDetail() {
           <h2 className="font-semibold text-gray-800 mb-4">Thành viên dự án</h2>
           {isManager && (
             <div className="flex gap-2 mb-5">
-              <input
-                type="number"
-                value={newMemberId}
-                onChange={(e) => setNewMemberId(e.target.value)}
-                placeholder="Nhập ID người dùng"
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 w-44"
-              />
+              <select
+                value={selectedMemberUserId}
+                onChange={(e) => setSelectedMemberUserId(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 min-w-72"
+              >
+                <option value="">Chọn thành viên từ công ty</option>
+                {availableUsers.map((u) => (
+                  <option key={u.userId} value={u.userId}>
+                    {u.companyEmail} - {u.systemUserId}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={handleAddMember}
+                disabled={!selectedMemberUserId}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition"
               >
                 Thêm thành viên
