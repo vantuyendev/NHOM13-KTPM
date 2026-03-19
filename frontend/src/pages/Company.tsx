@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Building2, Users, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import {
   getDepartments, createDepartment, updateDepartment, deleteDepartment,
@@ -25,11 +26,24 @@ export default function Company() {
 
   // User form
   const [showUserForm, setShowUserForm] = useState(false);
+  const [userModalMode, setUserModalMode] = useState<'create' | 'assign'>('create');
   const [userForm, setUserForm] = useState({ systemUserId: '', companyEmail: '', password: '', departmentId: '' });
+  const [assignUserForm, setAssignUserForm] = useState({ userId: '', departmentId: '' });
   const [savingUser, setSavingUser] = useState(false);
+  const [savingAssignUser, setSavingAssignUser] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editUserForm, setEditUserForm] = useState({ companyEmail: '', roleId: '2', departmentId: '', isActive: true });
   const [savingEditUser, setSavingEditUser] = useState(false);
+
+  const getApiErrorMessage = (error: unknown, fallback: string) => {
+    if (axios.isAxiosError(error)) {
+      const apiMessage = error.response?.data?.error;
+      if (typeof apiMessage === 'string' && apiMessage.trim()) {
+        return apiMessage;
+      }
+    }
+    return fallback;
+  };
 
   useEffect(() => {
     Promise.all([
@@ -52,6 +66,17 @@ export default function Company() {
     setShowDeptForm(true);
   };
 
+  const openCreateUserModal = () => {
+    setError('');
+    setUserModalMode('create');
+    setUserForm({ systemUserId: '', companyEmail: '', password: '', departmentId: '' });
+    setAssignUserForm({
+      userId: '',
+      departmentId: filterDeptId ? String(filterDeptId) : '',
+    });
+    setShowUserForm(true);
+  };
+
   const handleSaveDept = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingDept(true);
@@ -64,8 +89,8 @@ export default function Company() {
       const res = await getDepartments();
       setDepartments(res.data);
       setShowDeptForm(false);
-    } catch {
-      setError('Không thể lưu phòng ban.');
+    } catch (error) {
+      setError(getApiErrorMessage(error, 'Không thể lưu phòng ban.'));
     } finally {
       setSavingDept(false);
     }
@@ -77,8 +102,8 @@ export default function Company() {
       await deleteDepartment(id);
       setDepartments((prev) => prev.filter((d) => d.departmentId !== id));
       if (filterDeptId === id) setFilterDeptId(null);
-    } catch {
-      setError('Không thể xóa phòng ban do vẫn còn nhân viên.');
+    } catch (error) {
+      setError(getApiErrorMessage(error, 'Không thể xóa phòng ban do vẫn còn nhân viên.'));
     }
   };
 
@@ -101,6 +126,46 @@ export default function Company() {
       setError('Không thể thêm nhân viên.');
     } finally {
       setSavingUser(false);
+    }
+  };
+
+  const handleAssignExistingUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const selectedUserId = Number(assignUserForm.userId);
+    const selectedDepartmentId = Number(assignUserForm.departmentId);
+
+    if (!selectedUserId || !selectedDepartmentId) {
+      setError('Vui lòng chọn nhân viên và phòng ban.');
+      return;
+    }
+
+    const targetUser = users.find((u) => u.userId === selectedUserId);
+    if (!targetUser) {
+      setError('Không tìm thấy nhân viên để cập nhật.');
+      return;
+    }
+
+    if (targetUser.departmentId === selectedDepartmentId) {
+      setError('Nhân viên này đã thuộc phòng ban đã chọn.');
+      return;
+    }
+
+    setSavingAssignUser(true);
+    try {
+      await updateUser(targetUser.userId, {
+        companyEmail: targetUser.companyEmail,
+        roleId: targetUser.roleId,
+        departmentId: selectedDepartmentId,
+        isActive: targetUser.isActive,
+      });
+      const res = await getUsers();
+      setUsers(res.data);
+      setShowUserForm(false);
+    } catch {
+      setError('Không thể gán nhân viên vào phòng ban.');
+    } finally {
+      setSavingAssignUser(false);
     }
   };
 
@@ -149,6 +214,8 @@ export default function Company() {
   const filteredUsers = filterDeptId
     ? users.filter((u) => u.departmentId === filterDeptId)
     : users;
+
+  const assignableUsers = users.filter((u) => u.roleId !== 1);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -207,7 +274,18 @@ export default function Company() {
                     {canManageCompany && (
                       <div className="flex gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => openEditDept(dept)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition"><Pencil size={13} /></button>
-                        <button onClick={() => handleDeleteDept(dept.departmentId)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"><Trash2 size={13} /></button>
+                        <button
+                          onClick={() => handleDeleteDept(dept.departmentId)}
+                          disabled={count > 0}
+                          title={count > 0 ? 'Không thể xóa phòng ban khi còn nhân viên.' : 'Xóa phòng ban'}
+                          className={`p-1.5 rounded-md transition ${
+                            count > 0
+                              ? 'text-gray-300 cursor-not-allowed'
+                              : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                          }`}
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -233,7 +311,7 @@ export default function Company() {
             )}
           </div>
           {canManageCompany && (
-            <button onClick={() => setShowUserForm(true)} className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
+            <button onClick={openCreateUserModal} className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">
               <Plus size={15} /> Thêm nhân viên
             </button>
           )}
@@ -329,33 +407,97 @@ export default function Company() {
               <h3 className="font-semibold text-gray-900">Thêm nhân viên</h3>
               <button onClick={() => setShowUserForm(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
             </div>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mã người dùng hệ thống</label>
-                <input value={userForm.systemUserId} onChange={(e) => setUserForm({ ...userForm, systemUserId: e.target.value })} required placeholder="e.g. EMP001" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email công ty</label>
-                <input type="email" value={userForm.companyEmail} onChange={(e) => setUserForm({ ...userForm, companyEmail: e.target.value })} required placeholder="nhanvien@congty.com" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu tạm thời</label>
-                <input type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required placeholder="Nhập mật khẩu tạm thời" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phòng ban</label>
-                <select value={userForm.departmentId} onChange={(e) => setUserForm({ ...userForm, departmentId: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
-                  <option value="">— Không có —</option>
-                  {departments.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
-                </select>
-              </div>
-              <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowUserForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
-                <button type="submit" disabled={savingUser} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
-                  {savingUser ? 'Đang tạo…' : 'Tạo mới'}
-                </button>
-              </div>
-            </form>
+
+            <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-lg mb-4">
+              <button
+                type="button"
+                onClick={() => setUserModalMode('create')}
+                className={`text-sm py-2 rounded-md transition ${
+                  userModalMode === 'create' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Tạo nhân viên mới
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserModalMode('assign')}
+                className={`text-sm py-2 rounded-md transition ${
+                  userModalMode === 'assign' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Gán nhân viên có sẵn
+              </button>
+            </div>
+
+            {userModalMode === 'create' ? (
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mã người dùng hệ thống</label>
+                  <input value={userForm.systemUserId} onChange={(e) => setUserForm({ ...userForm, systemUserId: e.target.value })} required placeholder="e.g. EMP001" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email công ty</label>
+                  <input type="email" value={userForm.companyEmail} onChange={(e) => setUserForm({ ...userForm, companyEmail: e.target.value })} required placeholder="nhanvien@congty.com" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu tạm thời</label>
+                  <input type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required placeholder="Nhập mật khẩu tạm thời" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phòng ban</label>
+                  <select value={userForm.departmentId} onChange={(e) => setUserForm({ ...userForm, departmentId: e.target.value })} required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                    <option value="">— Chọn phòng ban —</option>
+                    {departments.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => setShowUserForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
+                  <button type="submit" disabled={savingUser} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
+                    {savingUser ? 'Đang tạo…' : 'Tạo mới'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleAssignExistingUser} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nhân viên có sẵn</label>
+                  <select
+                    value={assignUserForm.userId}
+                    onChange={(e) => setAssignUserForm({ ...assignUserForm, userId: e.target.value })}
+                    required
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  >
+                    <option value="">— Chọn nhân viên —</option>
+                    {assignableUsers.map((u) => (
+                      <option key={u.userId} value={u.userId}>{u.systemUserId} - {u.companyEmail}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phòng ban</label>
+                  <select
+                    value={assignUserForm.departmentId}
+                    onChange={(e) => setAssignUserForm({ ...assignUserForm, departmentId: e.target.value })}
+                    required
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  >
+                    <option value="">— Chọn phòng ban —</option>
+                    {departments.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+                  </select>
+                </div>
+                {assignableUsers.length === 0 && (
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    Chưa có nhân viên hiện hữu để gán. Hãy tạo nhân viên mới trước.
+                  </p>
+                )}
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => setShowUserForm(false)} className="flex-1 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition">Hủy</button>
+                  <button type="submit" disabled={savingAssignUser || assignableUsers.length === 0} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition">
+                    {savingAssignUser ? 'Đang gán…' : 'Gán vào phòng ban'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

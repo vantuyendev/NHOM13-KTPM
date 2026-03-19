@@ -146,12 +146,49 @@ app.MapHub<TaskHub>("/hubs/tasks");
 
 await app.StartAsync();
 
+static async System.Threading.Tasks.Task EnsureDepartmentDeletedAtColumnAsync(AppDbContext db)
+{
+    if (!db.Database.IsSqlite())
+    {
+        return;
+    }
+
+    await using var connection = db.Database.GetDbConnection();
+    if (connection.State != System.Data.ConnectionState.Open)
+    {
+        await connection.OpenAsync();
+    }
+
+    await using var checkColumnCommand = connection.CreateCommand();
+    checkColumnCommand.CommandText = "PRAGMA table_info('Departments');";
+
+    var hasDeletedAt = false;
+    await using (var reader = await checkColumnCommand.ExecuteReaderAsync())
+    {
+        while (await reader.ReadAsync())
+        {
+            var columnName = reader[1]?.ToString();
+            if (string.Equals(columnName, "DeletedAt", StringComparison.OrdinalIgnoreCase))
+            {
+                hasDeletedAt = true;
+                break;
+            }
+        }
+    }
+
+    if (!hasDeletedAt)
+    {
+        await db.Database.ExecuteSqlRawAsync("ALTER TABLE Departments ADD COLUMN DeletedAt TEXT NULL;");
+    }
+}
+
 // ---- DB init + seed for local development ----
 try
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.EnsureCreatedAsync();
+    await EnsureDepartmentDeletedAtColumnAsync(db);
 
     if (!await db.Roles.AnyAsync())
     {

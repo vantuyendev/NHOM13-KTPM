@@ -22,14 +22,14 @@ public class DepartmentController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var departments = await _context.Departments.ToListAsync();
+        var departments = await _context.Departments.Where(d => d.DeletedAt == null).ToListAsync();
         return Ok(departments.Select(d => new DepartmentDto(d.DepartmentId, d.Name, d.Description)));
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var department = await _context.Departments.FindAsync(id);
+        var department = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentId == id && d.DeletedAt == null);
         if (department == null)
             return NotFound(new { error = "Department not found." });
 
@@ -57,7 +57,7 @@ public class DepartmentController : ControllerBase
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDepartmentRequest request)
     {
-        var department = await _context.Departments.FindAsync(id);
+        var department = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentId == id && d.DeletedAt == null);
         if (department == null)
             return NotFound(new { error = "Department not found." });
 
@@ -74,15 +74,18 @@ public class DepartmentController : ControllerBase
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Delete(int id)
     {
-        var department = await _context.Departments.FindAsync(id);
+        var department = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentId == id && d.DeletedAt == null);
         if (department == null)
             return NotFound(new { error = "Department not found." });
 
-        var hasUsers = await _context.Users.AnyAsync(u => u.DepartmentId == id);
-        if (hasUsers)
-            return Conflict(new { error = "Cannot delete a department that still has users." });
+        // Check for active users assigned to this department
+        var hasActiveUsers = await _context.Users.AnyAsync(u => u.DepartmentId == id && u.DeletedAt == null);
+        if (hasActiveUsers)
+            return Conflict(new { error = "Không thể xóa phòng ban do vẫn còn nhân viên." });
 
-        _context.Departments.Remove(department);
+        // Soft-delete the department
+        department.DeletedAt = DateTime.UtcNow;
+        _context.Departments.Update(department);
         await _context.SaveChangesAsync();
         return NoContent();
     }

@@ -113,7 +113,7 @@ public class UserController : ControllerBase
         if (idTaken)
             return Conflict(new { error = "SystemUserId is already in use." });
 
-        var deptExists = await _context.Departments.AnyAsync(d => d.DepartmentId == request.DepartmentId);
+        var deptExists = await _context.Departments.AnyAsync(d => d.DepartmentId == request.DepartmentId && d.DeletedAt == null);
         if (!deptExists)
             return BadRequest(new { error = "Department not found." });
 
@@ -148,6 +148,11 @@ public class UserController : ControllerBase
         var user = await _context.Users.FindAsync(id);
         if (user == null || user.DeletedAt != null)
             return NotFound(new { error = "User not found." });
+
+        // Validate department exists and is not soft-deleted
+        var deptExists = await _context.Departments.AnyAsync(d => d.DepartmentId == request.DepartmentId && d.DeletedAt == null);
+        if (!deptExists)
+            return BadRequest(new { error = "Department not found or has been deleted." });
 
         user.CompanyEmail = request.CompanyEmail;
         user.RoleId = request.RoleId;
