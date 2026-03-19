@@ -16,6 +16,61 @@ namespace Nhom13.ProjectStorage.Tests.Services;
 public class TaskServiceTests
 {
     [Fact]
+    public async global::System.Threading.Tasks.Task CreateTask_ManagerNotInProjectMembers_ReturnsCreated()
+    {
+        await using var context = CreateContext();
+
+        var managerRole = new Role { RoleId = 1, RoleName = "Manager" };
+        var manager = new User
+        {
+            UserId = 1,
+            SystemUserId = "MGR001",
+            CompanyEmail = "manager@company.com",
+            PasswordHash = "hash",
+            RoleId = managerRole.RoleId,
+            MustChangePassword = false,
+            IsActive = true
+        };
+
+        var project = new Project
+        {
+            ProjectId = 10,
+            ProjectCode = "P10",
+            Name = "Project 10",
+            DepartmentId = 1,
+            ManagerUserId = manager.UserId,
+            Status = "Active"
+        };
+
+        context.Roles.Add(managerRole);
+        context.Users.Add(manager);
+        context.Projects.Add(project);
+        await context.SaveChangesAsync();
+
+        var hubContextMock = new Mock<IHubContext<TaskHub>>();
+        var controller = new TaskController(context, hubContextMock.Object)
+        {
+            ControllerContext = BuildControllerContext(userId: manager.UserId, role: "Manager")
+        };
+
+        var request = new CreateTaskRequest(
+            Title: "Manager task",
+            Status: "To Do",
+            StartDate: DateTime.UtcNow,
+            DueDate: DateTime.UtcNow.AddDays(2)
+        );
+
+        var result = await controller.CreateTask(project.ProjectId, request);
+
+        var created = Assert.IsType<CreatedAtActionResult>(result);
+        var payload = Assert.IsType<TaskDto>(created.Value);
+        Assert.Equal(project.ProjectId, payload.ProjectId);
+        Assert.Equal("Manager task", payload.Title);
+
+        Assert.Equal(1, await context.Tasks.CountAsync());
+    }
+
+    [Fact]
     public async global::System.Threading.Tasks.Task UpdateTask_UserNotInProjectMembers_ReturnsForbid()
     {
         await using var context = CreateContext();

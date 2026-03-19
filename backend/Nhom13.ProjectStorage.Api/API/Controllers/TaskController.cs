@@ -25,16 +25,23 @@ public class TaskController : ControllerBase
     }
 
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private bool IsManager => string.Equals(User.FindFirstValue(ClaimTypes.Role), "Manager", StringComparison.Ordinal);
 
     private async Task<bool> IsProjectMemberAsync(int projectId) =>
         await _context.ProjectMembers.AnyAsync(pm => pm.ProjectId == projectId && pm.UserId == CurrentUserId);
 
+    private async Task<bool> HasProjectAccessAsync(int projectId)
+    {
+        if (IsManager)
+            return true;
+
+        return await IsProjectMemberAsync(projectId);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetTasks(int projectId)
     {
-        var isMember = await IsProjectMemberAsync(projectId);
-        var role = User.FindFirstValue(ClaimTypes.Role);
-        if (role != "Manager" && !isMember)
+        if (!await HasProjectAccessAsync(projectId))
             return Forbid();
 
         var tasks = await _context.Tasks
@@ -77,9 +84,7 @@ public class TaskController : ControllerBase
     [HttpGet("{taskId}")]
     public async Task<IActionResult> GetTask(int projectId, int taskId)
     {
-        var isMember = await IsProjectMemberAsync(projectId);
-        var role = User.FindFirstValue(ClaimTypes.Role);
-        if (role != "Manager" && !isMember)
+        if (!await HasProjectAccessAsync(projectId))
             return Forbid();
 
         var task = await _context.Tasks.FirstOrDefaultAsync(t => t.TaskId == taskId && t.ProjectId == projectId);
@@ -92,7 +97,7 @@ public class TaskController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTask(int projectId, [FromBody] CreateTaskRequest request)
     {
-        if (!await IsProjectMemberAsync(projectId))
+        if (!await HasProjectAccessAsync(projectId))
             return Forbid();
 
         var task = new TaskEntity
@@ -114,7 +119,7 @@ public class TaskController : ControllerBase
     [HttpPut("{taskId}")]
     public async Task<IActionResult> UpdateTask(int projectId, int taskId, [FromBody] UpdateTaskRequest request)
     {
-        if (!await IsProjectMemberAsync(projectId))
+        if (!await HasProjectAccessAsync(projectId))
             return Forbid();
 
         var task = await _context.Tasks.FirstOrDefaultAsync(t => t.TaskId == taskId && t.ProjectId == projectId);
@@ -143,7 +148,7 @@ public class TaskController : ControllerBase
     [HttpDelete("{taskId}")]
     public async Task<IActionResult> DeleteTask(int projectId, int taskId)
     {
-        if (!await IsProjectMemberAsync(projectId))
+        if (!await HasProjectAccessAsync(projectId))
             return Forbid();
 
         var task = await _context.Tasks.FirstOrDefaultAsync(t => t.TaskId == taskId && t.ProjectId == projectId);
