@@ -3,7 +3,9 @@
 > vite
 
 
-  VITE v7.3.1  ready in 2578 ms
+  VITE v7.3.1  ready in 1113 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
+2:21:54 PM [vite] (client) hmr update /src/pages/Company.tsx, /src/index.css
+2:22:25 PM [vite] (client) hmr update /src/pages/Company.tsx, /src/index.css

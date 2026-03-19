@@ -39,6 +39,9 @@ export default function Company() {
     if (axios.isAxiosError(error)) {
       const apiMessage = error.response?.data?.error;
       if (typeof apiMessage === 'string' && apiMessage.trim()) {
+        if (apiMessage === 'Email is already in use.') return 'Email công ty đã tồn tại.';
+        if (apiMessage === 'SystemUserId is already in use.') return 'Mã người dùng hệ thống đã tồn tại.';
+        if (apiMessage === 'Department not found.') return 'Phòng ban không tồn tại hoặc đã bị xóa.';
         return apiMessage;
       }
     }
@@ -109,11 +112,27 @@ export default function Company() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const normalizedSystemUserId = userForm.systemUserId.trim();
+    const normalizedCompanyEmail = userForm.companyEmail.trim().toLowerCase();
+
+    const duplicateEmail = users.some((u) => u.companyEmail.trim().toLowerCase() === normalizedCompanyEmail);
+    if (duplicateEmail) {
+      setError('Email công ty đã tồn tại.');
+      return;
+    }
+
+    const duplicateSystemUserId = users.some((u) => u.systemUserId.trim().toLowerCase() === normalizedSystemUserId.toLowerCase());
+    if (duplicateSystemUserId) {
+      setError('Mã người dùng hệ thống đã tồn tại.');
+      return;
+    }
+
     setSavingUser(true);
     try {
       await createUser({
-        systemUserId: userForm.systemUserId,
-        companyEmail: userForm.companyEmail,
+        systemUserId: normalizedSystemUserId,
+        companyEmail: normalizedCompanyEmail,
         password: userForm.password,
         roleId: 2,
         departmentId: userForm.departmentId ? Number(userForm.departmentId) : undefined,
@@ -122,8 +141,8 @@ export default function Company() {
       setUsers(res.data);
       setShowUserForm(false);
       setUserForm({ systemUserId: '', companyEmail: '', password: '', departmentId: '' });
-    } catch {
-      setError('Không thể thêm nhân viên.');
+    } catch (error) {
+      setError(getApiErrorMessage(error, 'Không thể thêm nhân viên.'));
     } finally {
       setSavingUser(false);
     }
